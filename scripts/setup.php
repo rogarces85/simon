@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-echo "<h1>🚀 Setup RUNCOACH</h1>";
+echo "<h1>🚀 Setup RUNCOACH v2.0</h1>";
 
 try {
     echo "Cargando dependencias...<br>";
@@ -30,7 +30,7 @@ try {
     echo "✅ Conexión a Base de Datos establecida.<br><br>";
 
     // 1. Crear Tablas
-    echo "<h2>📦 Creando Tablas...</h2>";
+    echo "<h2>📦 Verificando Tablas...</h2>";
 
     $queries = [
         "CREATE TABLE IF NOT EXISTS users (
@@ -83,83 +83,122 @@ try {
 
     foreach ($queries as $sql) {
         $db->exec($sql);
-        echo "✅ Tabla procesada.<br>";
+        echo "✅ Tabla verificada.<br>";
     }
 
-    // 2. Crear Usuario Coach por defecto
-    echo "<h2>👤 Creando Usuario Coach...</h2>";
-
-    $coachData = [
-        'username' => 'coach@runcoach.com',
-        'password' => password_hash('coach123', PASSWORD_DEFAULT),
-        'role' => 'coach',
-        'name' => 'Entrenador Principal',
-        'observations' => 'Usuario administrativo inicial'
-    ];
-
+    // 2. Obtener o Crear Coach
+    $coachEmail = 'coach@runcoach.com';
     $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
-    $stmt->execute([$coachData['username']]);
+    $stmt->execute([$coachEmail]);
     $existingCoach = $stmt->fetch();
 
     if ($existingCoach) {
-        echo "ℹ️ El usuario Coach ya existe.<br>";
         $coachId = $existingCoach['id'];
+        echo "ℹ️ Coach ya existe (ID: $coachId).<br>";
     } else {
-        $coachId = User::create($coachData);
-        echo "✅ Usuario Coach creado con éxito!<br>";
+        $coachId = User::create([
+            'username' => $coachEmail,
+            'password' => password_hash('coach123', PASSWORD_DEFAULT),
+            'role' => 'coach',
+            'name' => 'Entrenador Principal'
+        ]);
+        echo "✅ Coach creado con éxito.<br>";
     }
 
-    echo "<b>Email:</b> coach@runcoach.com<br>";
-    echo "<b>Password:</b> coach123<br><br>";
-
-    // 3. Crear Plantillas de Demostración
-    echo "<h2>📋 Creando Plantillas Demo...</h2>";
+    // 3. Biblioteca de Plantillas (50+ sesiones)
+    echo "<h2>📋 Expandiendo Biblioteca de Plantillas (50+)...</h2>";
 
     $demoTemplates = [
-        ['name' => '15x400m ritmo 1:38-1:34', 'type' => 'Series', 'block_type' => 'Construcción', 'structure' => 'Series de 400m con recuperación activa'],
-        ['name' => '12x400m ritmo 1:40', 'type' => 'Series', 'block_type' => 'Construcción', 'structure' => 'Series de 400m a ritmo constante'],
-        ['name' => '10x400m ritmo 1:35', 'type' => 'Series', 'block_type' => 'Pico', 'structure' => 'Series cortas a alta intensidad'],
-        ['name' => '8x400m ritmo 1:30', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Intervalos cortos con recuperación'],
-        ['name' => '6x400m ritmo 1:28', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Intervalos de velocidad'],
-        ['name' => '20x400m ritmo 1:45', 'type' => 'Intervalos', 'block_type' => 'Base', 'structure' => 'Intervalos de volumen a ritmo moderado'],
-        ['name' => '16x400m ritmo 1:42', 'type' => 'Intervalos', 'block_type' => 'Construcción', 'structure' => 'Intervalos de resistencia'],
-        ['name' => '10x400m progresivo 1:50-1:35', 'type' => 'Intervalos', 'block_type' => 'Construcción', 'structure' => 'Progresión controlada'],
-        ['name' => '20x200m ritmo 48s', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Repeticiones cortas velocidad'],
-        ['name' => '15x200m ritmo 45s', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Series velocidad pura'],
-        ['name' => '12x200m ritmo 42s', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Series velocidad alta'],
-        ['name' => '10x200m ritmo 40s', 'type' => 'Intervalos', 'block_type' => 'Pico', 'structure' => 'Series velocidad máxima'],
-        ['name' => 'Fondo 20km ritmo suave', 'type' => 'Fondo', 'block_type' => 'Base', 'structure' => 'Carrera larga a ritmo conversacional'],
-        ['name' => 'Fondo 25km con progresivo', 'type' => 'Fondo', 'block_type' => 'Construcción', 'structure' => 'Fondo con últimos 5km más rápido'],
-        ['name' => 'Tempo 10km ritmo objetivo', 'type' => 'Tempo', 'block_type' => 'Pico', 'structure' => 'Carrera a ritmo de competencia'],
-        ['name' => 'Recuperación suave 30min', 'type' => 'Recuperación', 'block_type' => 'Base', 'structure' => 'Trote suave regenerativo'],
-        ['name' => 'Descanso activo - caminata', 'type' => 'Descanso', 'block_type' => 'Base', 'structure' => 'Caminata de 30-45min'],
-        ['name' => 'Descanso total', 'type' => 'Descanso', 'block_type' => 'Base', 'structure' => 'Día de recuperación completa'],
+        // SERIES (Velocidad)
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '10x200m @40s', 'structure' => 'Velocidad máxima, rec 200m trote'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '12x200m @42s', 'structure' => 'Potencia aeróbica, rec 90s'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '15x200m @45s', 'structure' => 'Rimo sostenido, rec 60s'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '20x200m @48s', 'structure' => 'Volumen velocidad, rec 1:1'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '6x400m @1:28', 'structure' => 'Velocidad crítica, rec 2min'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '8x400m @1:30', 'structure' => 'Ritmo 1.5k, rec 90s'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '10x400m @1:35', 'structure' => 'Ritmo 3k, rec 75s'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '12x400m @1:40', 'structure' => 'Ritmo 5k, rec 60s'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '15x400m @1:38-1:34', 'structure' => 'Progresivos, cada 3 más rápido, rec 45s'],
+        ['type' => 'Series', 'block_type' => 'Base', 'name' => '20x400m @1:45', 'structure' => 'Capacidad aeróbica, rec 30s'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '5x800m @3:10', 'structure' => 'Umbral láctico, rec 2:30'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '6x800m @3:15', 'structure' => 'Ritmo 10k, rec 2min'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '8x800m @3:25', 'structure' => 'Entrenamiento extensivo, rec 90s'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '4x1000m @3:55', 'structure' => 'VO2 Max, rec 400m trote'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '5x1000m @4:00', 'structure' => 'Ritmo 5k objetivo, rec 3min'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '6x1000m @4:15', 'structure' => 'Ritmo 10k, rec 2min'],
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '3x2000m @8:30', 'structure' => 'Umbral, rec 3min trote'],
+        ['type' => 'Series', 'block_type' => 'Base', 'name' => '4x2000m @9:00', 'structure' => 'Resistencia muscular, rec 2min'],
+
+        // INTERVALOS (Resistencia)
+        ['type' => 'Intervalos', 'block_type' => 'Construcción', 'name' => '10x400m prog 1:50-1:35', 'structure' => 'Inicia suave, termina fuerte'],
+        ['type' => 'Intervalos', 'block_type' => 'Construcción', 'name' => '16x400m @1:42', 'structure' => 'Intervalos aeróbicos, rec 100m trote'],
+        ['type' => 'Intervalos', 'block_type' => 'Construcción', 'name' => '3x(5min fuerte + 3min suave)', 'structure' => 'Fartlek clásico'],
+        ['type' => 'Intervalos', 'block_type' => 'Pico', 'name' => '5x(3min @4:00 + 2min @5:00)', 'structure' => 'Cambio de ritmo controlado'],
+        ['type' => 'Intervalos', 'block_type' => 'Base', 'name' => '10x(1min rápido + 1min suave)', 'structure' => 'Fartlek introductorio'],
+        ['type' => 'Intervalos', 'block_type' => 'Construcción', 'name' => 'Pirámide 200-400-600-800-600-400-200', 'structure' => 'Rec 200m trote entre todos'],
+        ['type' => 'Intervalos', 'block_type' => 'Pico', 'name' => 'Cuesta 10x150m fuerte', 'structure' => 'Potencia en subida, rec bajada'],
+        ['type' => 'Intervalos', 'block_type' => 'Pico', 'name' => 'Cuesta 12x200m progresivo', 'structure' => 'Fuerza explosiva subiendo'],
+
+        // FONDOS (Largo)
+        ['type' => 'Fondo', 'block_type' => 'Base', 'name' => 'Fondo 15km Suave', 'structure' => 'Ritmo cómodo, 70-75% FC'],
+        ['type' => 'Fondo', 'block_type' => 'Base', 'name' => 'Fondo 18km Suave', 'structure' => 'Carrera larga base'],
+        ['type' => 'Fondo', 'block_type' => 'Base', 'name' => 'Fondo 20km Suave', 'structure' => 'Base aeróbica larga'],
+        ['type' => 'Fondo', 'block_type' => 'Base', 'name' => 'Fondo 22km Suave', 'structure' => 'Extensión resistencia'],
+        ['type' => 'Fondo', 'block_type' => 'Construcción', 'name' => 'Fondo 25km Progresivo', 'structure' => 'Últimos 5km a ritmo 21k'],
+        ['type' => 'Fondo', 'block_type' => 'Construcción', 'name' => 'Fondo 28km Progresivo', 'structure' => 'Terminar últimos 8km ritmo maratón'],
+        ['type' => 'Fondo', 'block_type' => 'Pico', 'name' => 'Fondo 30km con Bloques', 'structure' => '3x5km ritmo maratón entre medio'],
+        ['type' => 'Fondo', 'block_type' => 'Pico', 'name' => 'Fondo 32km Tirada Larga', 'structure' => 'Máxima distancia para maratón'],
+        ['type' => 'Fondo', 'block_type' => 'Construcción', 'name' => 'Fondo Montaña 2h', 'structure' => 'Carrera por senderos con desnivel'],
+
+        // TEMPO (Umbral)
+        ['type' => 'Tempo', 'block_type' => 'Base', 'name' => 'Tempo 5km', 'structure' => 'Ritmo sostenible fuerte'],
+        ['type' => 'Tempo', 'block_type' => 'Construcción', 'name' => 'Tempo 8km @Ritmo 10k+15s', 'structure' => 'Umbral aeróbico'],
+        ['type' => 'Tempo', 'block_type' => 'Pico', 'name' => 'Tempo 10km Ritmo Objetivo', 'structure' => 'Ensayo ritmo carrera'],
+        ['type' => 'Tempo', 'block_type' => 'Pico', 'name' => 'Tempo 12km Umbral', 'structure' => 'Máximo esfuerzo mantenido'],
+        ['type' => 'Tempo', 'block_type' => 'Construcción', 'name' => 'Tempo 2x5km rec 5min', 'structure' => 'Fraccionado al umbral'],
+
+        // RECUPERACIÓN / DESCANSO
+        ['type' => 'Recuperación', 'block_type' => 'Base', 'name' => 'Trote 20min Regenerativo', 'structure' => 'Mínimo impacto'],
+        ['type' => 'Recuperación', 'block_type' => 'Base', 'name' => 'Trote 30min Suave', 'structure' => 'Regeneración post calidad'],
+        ['type' => 'Recuperación', 'block_type' => 'Base', 'name' => 'Trote 40min Muy Suave', 'structure' => 'Mantenimiento aeróbico'],
+        ['type' => 'Descanso', 'block_type' => 'Base', 'name' => 'Descanso Total', 'structure' => 'Sin actividad física'],
+        ['type' => 'Descanso', 'block_type' => 'Base', 'name' => 'Descanso Activo - Caminata', 'structure' => '45min caminata ligera'],
+        ['type' => 'Descanso', 'block_type' => 'Base', 'name' => 'Descanso Activo - Movilidad', 'structure' => '30min ejercicios estiramiento'],
+        ['type' => 'Descanso', 'block_type' => 'Base', 'name' => 'Descanso - Yoga / Pilates', 'structure' => 'Sesión de flexibilidad'],
+
+        // OTROS / MIXTOS
+        ['type' => 'Series', 'block_type' => 'Construcción', 'name' => '2x(5x200m) rec 3min', 'structure' => 'Bloques de velocidad'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '3x(4x400m) @1:32', 'structure' => 'Series rotas con rec corta'],
+        ['type' => 'Fondo', 'block_type' => 'Base', 'name' => 'Fondo Aeróbico 1h30', 'structure' => 'Por tiempo, no km'],
+        ['type' => 'Tempo', 'block_type' => 'Base', 'name' => 'Tempo 40min Progresivo', 'structure' => 'Creciendo cada 10min'],
+        ['type' => 'Recuperación', 'block_type' => 'Base', 'name' => 'Trote 45min + 6 Rectas', 'structure' => 'Mantenimiento y técnica'],
+        ['type' => 'Intervalos', 'block_type' => 'Construcción', 'name' => '1min on / 1min off x 15', 'structure' => 'Alta densidad'],
+        ['type' => 'Series', 'block_type' => 'Pico', 'name' => '10x100m Rectas Explosivas', 'structure' => 'Técnica de carrera'],
     ];
 
     $insertedCount = 0;
-    foreach ($demoTemplates as $template) {
-        // Check if exists
+    foreach ($demoTemplates as $tpl) {
         $stmt = $db->prepare("SELECT id FROM templates WHERE coach_id = ? AND name = ?");
-        $stmt->execute([$coachId, $template['name']]);
-
+        $stmt->execute([$coachId, $tpl['name']]);
         if (!$stmt->fetch()) {
             $sql = "INSERT INTO templates (coach_id, name, type, block_type, structure) VALUES (?, ?, ?, ?, ?)";
             $stmt = $db->prepare($sql);
             $stmt->execute([
                 $coachId,
-                $template['name'],
-                $template['type'],
-                $template['block_type'],
-                $template['structure']
+                $tpl['name'],
+                $tpl['type'],
+                $tpl['block_type'],
+                $tpl['structure']
             ]);
             $insertedCount++;
         }
     }
 
-    echo "✅ $insertedCount plantillas demo creadas.<br><br>";
+    echo "✅ Se añadieron $insertedCount nuevas plantillas (Total en BD: " . (count($demoTemplates) - $insertedCount + $insertedCount) . " aprox).<br><br>";
 
-    echo "<h2 style='color: green;'>🎉 ¡Configuración Completada!</h2>";
-    echo "<a href='../login.php' style='display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: bold;'>Ir al Login →</a>";
+    echo "<h2 style='color: green;'>🎉 ¡Actualización Completada!</h2>";
+    echo "<p>Ya puedes ver las más de 50 plantillas en la sección correspondiente.</p>";
+    echo "<a href='../atletas.php' style='display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: bold;'>Ir a Atletas →</a>";
 
 } catch (Throwable $e) {
     echo "<h1 style='color: red;'>❌ ERROR FATAL</h1>";
