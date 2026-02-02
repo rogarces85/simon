@@ -69,31 +69,44 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
             <!-- Navigation -->
             <nav class="flex-1 p-4 space-y-1">
-                <a href="dashboard.php"
-                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    Panel Principal
-                </a>
-                <a href="atletas.php"
-                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'atletas' ? 'active' : ''; ?>">
-                    <i data-lucide="users" class="w-5 h-5"></i>
-                    Atletas
-                </a>
-                <a href="plantillas.php"
-                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'plantillas' ? 'active' : ''; ?>">
-                    <i data-lucide="file-text" class="w-5 h-5"></i>
-                    Plantillas
-                </a>
-                <a href="generar_plan.php"
-                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
-                    <i data-lucide="calendar" class="w-5 h-5"></i>
-                    Generar Plan
-                </a>
-                <a href="metricas.php"
-                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                    Métricas
-                </a>
+                <?php if ($currentUser['role'] === 'coach'): ?>
+                    <a href="dashboard.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        Panel Principal
+                    </a>
+                    <a href="atletas.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'atletas' ? 'active' : ''; ?>">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        Atletas
+                    </a>
+                    <a href="plantillas.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'plantillas' ? 'active' : ''; ?>">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                        Plantillas
+                    </a>
+                    <a href="generar_plan.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        Generar Plan
+                    </a>
+                    <a href="metricas.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        Métricas
+                    </a>
+                <?php else: ?>
+                    <a href="mi_plan.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_plan' ? 'active' : ''; ?>">
+                        <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                        Mi Plan Semanal
+                    </a>
+                    <a href="metricas.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        Mi Progreso
+                    </a>
+                <?php endif; ?>
             </nav>
 
             <!-- User Section -->
@@ -103,10 +116,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold">
                         <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
                     </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-slate-900">
-                            <?php echo htmlspecialchars($currentUser['name']); ?></p>
-                        <p class="text-xs text-slate-500">Entrenador</p>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold text-slate-900 truncate">
+                            <?php echo htmlspecialchars($currentUser['name']); ?>
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            <?php echo $currentUser['role'] === 'coach' ? 'Entrenador' : 'Atleta'; ?></p>
                     </div>
                 </div>
                 <a href="logout.php"
