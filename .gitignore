@@ -1,5 +1,5 @@
 # PHP project ignores
 .DS_Store
 *.log
-config/config.php
+# config/config.php (Removed to allow deployment via GitHub)
 # Add any other sensitive or temporary files here
