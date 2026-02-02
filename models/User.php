@@ -72,4 +72,19 @@ class User
         $stmt = $db->prepare($sql);
         return $stmt->execute($values);
     }
+
+    public static function delete($id)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    public static function getByCoachId($coachId)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM users WHERE coach_id = ? AND role = 'athlete' ORDER BY name");
+        $stmt->execute([$coachId]);
+        return $stmt->fetchAll();
+    }
 }

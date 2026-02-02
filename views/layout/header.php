@@ -1,7 +1,15 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../config/config.php';
 Auth::init();
+
+if (!Auth::check()) {
+    header('Location: login.php');
+    exit;
+}
+
 $currentUser = Auth::user();
+$currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -9,10 +17,7 @@ $currentUser = Auth::user();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        <?php echo SITE_NAME; ?>
-    </title>
-    <!-- Tailwind CSS -->
+    <title><?php echo SITE_NAME; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,45 +25,97 @@ $currentUser = Auth::user();
                 extend: {
                     colors: {
                         primary: '#3b82f6',
-                        secondary: '#1e293b',
+                        sidebar: '#1e293b',
                     }
                 }
             }
         }
     </script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
+        .sidebar-link {
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .sidebar-link.active {
+            background: #3b82f6;
+            color: white;
         }
     </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen text-slate-900">
-    <?php if ($currentUser): ?>
-        <nav class="sticky top-0 z-50 glass border-b border-slate-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex">
-                        <div class="flex-shrink-0 flex items-center">
-                            <span class="text-2xl font-bold text-primary">RUNCOACH</span>
-                        </div>
+<body class="bg-slate-50 min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full">
+            <!-- Logo -->
+            <div class="p-6 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="dumbbell" class="w-5 h-5 text-white rotate-[-45deg]"></i>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm font-medium text-slate-600">Hola,
-                            <?php echo htmlspecialchars($currentUser['name']); ?>
-                        </span>
-                        <a href="logout.php" class="text-sm text-red-600 hover:text-red-800 font-medium">Cerrar sesión</a>
-                    </div>
+                    <span class="text-xl font-bold text-slate-900">RUNCOACH</span>
                 </div>
             </div>
-        </nav>
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <?php endif; ?>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="dashboard.php"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    Panel Principal
+                </a>
+                <a href="atletas.php"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'atletas' ? 'active' : ''; ?>">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    Atletas
+                </a>
+                <a href="plantillas.php"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'plantillas' ? 'active' : ''; ?>">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    Plantillas
+                </a>
+                <a href="generar_plan.php"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                    Generar Plan
+                </a>
+                <a href="metricas.php"
+                    class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    Métricas
+                </a>
+            </nav>
+
+            <!-- User Section -->
+            <div class="p-4 border-t border-slate-100">
+                <div class="flex items-center gap-3 px-4 py-3">
+                    <div
+                        class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold">
+                        <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-slate-900">
+                            <?php echo htmlspecialchars($currentUser['name']); ?></p>
+                        <p class="text-xs text-slate-500">Entrenador</p>
+                    </div>
+                </div>
+                <a href="logout.php"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 font-medium hover:bg-red-50 transition-all">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">

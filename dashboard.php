@@ -1,71 +1,111 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/db.php';
 require_once 'models/User.php';
-require_once 'models/Workout.php';
-require_once 'config/config.php';
-
 Auth::init();
+
 if (!Auth::check()) {
     header('Location: login.php');
     exit;
 }
 
-$currentUser = Auth::user();
-$userData = User::getById($currentUser['id']);
+$user = Auth::user();
+
+// Redirect based on role
+if ($user['role'] === 'coach') {
+    $athletes = User::getByCoachId($user['id']);
+    $athleteCount = count($athletes);
+} else {
+    header('Location: mi_plan.php'); // Future: athlete view
+    exit;
+}
 
 include 'views/layout/header.php';
 ?>
 
-<div class="space-y-8">
-    <!-- Header Section -->
-    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-900">Panel de Control</h1>
-            <p class="text-slate-500 mt-1">Bienvenido de nuevo,
-                <?php echo htmlspecialchars($userData['name']); ?>
-            </p>
-        </div>
+<!-- Page Header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">PANEL PRINCIPAL</h1>
+    <p class="text-slate-500 mt-1">Bienvenido de nuevo, <?php echo htmlspecialchars($user['name']); ?></p>
+</div>
 
-        <?php if ($userData['role'] === 'coach'): ?>
-            <button
-                class="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-200 hover:bg-blue-600 transition-all flex items-center gap-2">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                Crear Nuevo Atleta
-            </button>
-        <?php endif; ?>
-    </header>
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div class="flex items-center gap-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                    <i data-lucide="users" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-slate-500">
-                        <?php echo $userData['role'] === 'coach' ? 'Atletas Activos' : 'Entrenamientos'; ?>
-                    </p>
-                    <p class="text-2xl font-bold text-slate-900">--</p>
-                </div>
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <a href="atletas.php"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <i data-lucide="users" class="w-7 h-7 text-blue-600"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900"><?php echo $athleteCount; ?></p>
+                <p class="text-sm text-slate-500">Atletas</p>
             </div>
         </div>
-        <!-- Add more stat cards here -->
+    </a>
+
+    <a href="plantillas.php"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center">
+                <i data-lucide="file-text" class="w-7 h-7 text-purple-600"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900">0</p>
+                <p class="text-sm text-slate-500">Plantillas</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="generar_plan.php"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center">
+                <i data-lucide="calendar" class="w-7 h-7 text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900">0</p>
+                <p class="text-sm text-slate-500">Planes Activos</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="metricas.php"
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center">
+                <i data-lucide="trending-up" class="w-7 h-7 text-orange-600"></i>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-slate-900">--%</p>
+                <p class="text-sm text-slate-500">Cumplimiento</p>
+            </div>
+        </div>
+    </a>
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white">
+        <h3 class="text-xl font-bold mb-3">¿Nuevo atleta?</h3>
+        <p class="text-blue-100 mb-6">Agrega un atleta a tu equipo y comienza a diseñar su plan de entrenamiento
+            personalizado.</p>
+        <a href="atletas.php"
+            class="inline-flex items-center gap-2 bg-white text-blue-600 px-5 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+            Agregar Atleta
+        </a>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h2 class="font-bold text-slate-900">
-                <?php echo $userData['role'] === 'coach' ? 'Lista de Atletas' : 'Próximos Entrenamientos'; ?>
-            </h2>
-        </div>
-        <div class="p-6">
-            <div class="text-center py-12 text-slate-400">
-                <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
-                <p>No hay datos disponibles en este momento</p>
-            </div>
-        </div>
+    <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-8 text-white">
+        <h3 class="text-xl font-bold mb-3">Crea tu primera plantilla</h3>
+        <p class="text-purple-100 mb-6">Define sesiones de entrenamiento reutilizables: intervalos, fondos, series y
+            más.</p>
+        <a href="plantillas.php"
+            class="inline-flex items-center gap-2 bg-white text-purple-600 px-5 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-colors">
+            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            Crear Plantilla
+        </a>
     </div>
 </div>
 
