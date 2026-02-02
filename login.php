@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-slate-900 font-inter">TrainPro</h1>
-            <p class="text-slate-500 mt-2">Bienvenido de nuevo</p>
+            <h1 class="text-3xl font-bold text-slate-900 font-inter">RUNCOACH</h1>
+            <p class="text-slate-500 mt-2">Ingresa a tu plataforma de entrenamiento</p>
         </div>
 
         <?php if ($error): ?>

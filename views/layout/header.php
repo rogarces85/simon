@@ -48,7 +48,7 @@ $currentUser = Auth::user();
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
-                            <span class="text-2xl font-bold text-primary">TrainPro</span>
+                            <span class="text-2xl font-bold text-primary">RUNCOACH</span>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">

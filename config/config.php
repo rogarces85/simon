@@ -7,5 +7,5 @@ define('DB_PASS', '9D8Q2>uR');
 define('DB_CHARSET', 'utf8mb4');
 
 // Other configurations
-define('SITE_NAME', 'TrainPro');
-define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/SIMON/'); // Adjust if needed
+define('SITE_NAME', 'RUNCOACH');
+define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/runcoach/'); // Updated to match hosting path
