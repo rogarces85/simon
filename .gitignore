@@ -1,0 +1,5 @@
+# PHP project ignores
+.DS_Store
+*.log
+config/config.php
+# Add any other sensitive or temporary files here
