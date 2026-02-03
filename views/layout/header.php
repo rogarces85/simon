@@ -9,6 +9,12 @@ if (!Auth::check()) {
 }
 
 $currentUser = Auth::user();
+require_once __DIR__ . '/../../models/User.php';
+$dbUser = User::getById($currentUser['id']);
+if ($dbUser) {
+    $currentUser = array_merge($currentUser, $dbUser);
+}
+
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
@@ -30,7 +36,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     }
                 }
             }
-        }
+    }
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

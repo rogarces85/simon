@@ -9,8 +9,9 @@ if (!Auth::check()) {
     exit;
 }
 
-$user = Auth::user();
+$userSession = Auth::user();
 $db = Database::getInstance();
+$user = User::getById($userSession['id']);
 
 $success = null;
 $error = null;

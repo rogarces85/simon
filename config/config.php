@@ -1,5 +1,9 @@
 <?php
-// Configuration for Hostinger MySQL Database
+// Enable Error Reporting for Debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 define('DB_HOST', 'srv1663.hstgr.io');
 define('DB_NAME', 'u901416689_runcoach');
 define('DB_USER', 'u901416689_runcoach');
