@@ -11,11 +11,12 @@ $athletes = User::getByCoachId($coach['id']);
 $athleteId = $_GET['athlete_id'] ?? 'all';
 
 // Build Query Logic
-$whereClause = "WHERE w.coach_id = ?";
+// Build Query Logic
+$whereClause = "JOIN users u ON w.athlete_id = u.id WHERE u.coach_id = ?";
 $params = [$coach['id']];
 
 if ($athleteId !== 'all') {
-    $whereClause .= " AND w.user_id = ?";
+    $whereClause .= " AND w.athlete_id = ?";
     $params[] = $athleteId;
 }
 

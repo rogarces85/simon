@@ -13,18 +13,19 @@ $athletes = User::getByCoachId($coach['id']);
 $athleteId = $_GET['athlete_id'] ?? 'all';
 
 // Build Query Logic
-$whereClause = "WHERE w.coach_id = ? AND w.status = 'completed'";
+// Build Query Logic
+$whereClause = "WHERE u.coach_id = ? AND w.status = 'completed'";
 $params = [$coach['id']];
 
 if ($athleteId !== 'all') {
-    $whereClause .= " AND w.user_id = ?";
+    $whereClause .= " AND w.athlete_id = ?";
     $params[] = $athleteId;
 }
 
 // Fetch Completed Workouts
 $sql = "SELECT w.*, u.name as athlete_name 
         FROM workouts w 
-        JOIN users u ON w.user_id = u.id 
+        JOIN users u ON w.athlete_id = u.id 
         $whereClause 
         ORDER BY w.completed_at DESC, w.date DESC 
         LIMIT 50";
