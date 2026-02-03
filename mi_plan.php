@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 require_once 'includes/db.php';
 require_once 'models/Team.php';
 require_once 'models/Workout.php'; // Fix: Import required model
+require_once 'models/User.php'; // Fix: Import required model for line 15
 
 Auth::init();
 Auth::requireRole('athlete');
