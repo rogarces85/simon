@@ -8,9 +8,6 @@ Auth::requireRole('coach');
 $coach = Auth::user();
 $athletes = User::getByCoachId($coach['id']);
 
-include 'views/layout/header.php';
-?>
-
 $athleteId = $_GET['athlete_id'] ?? 'all';
 
 // Build Query Logic
@@ -18,8 +15,8 @@ $whereClause = "WHERE w.coach_id = ?";
 $params = [$coach['id']];
 
 if ($athleteId !== 'all') {
-$whereClause .= " AND w.user_id = ?";
-$params[] = $athleteId;
+    $whereClause .= " AND w.user_id = ?";
+    $params[] = $athleteId;
 }
 
 // Stats: Completed Workouts
@@ -28,8 +25,7 @@ $stmt->execute($params);
 $completedCount = $stmt->fetchColumn();
 
 // Stats: Pending This Week
-$stmt = $db->prepare("SELECT COUNT(*) FROM workouts w $whereClause AND w.status = 'pending' AND WEEK(w.date, 1) =
-WEEK(CURDATE(), 1)");
+$stmt = $db->prepare("SELECT COUNT(*) FROM workouts w $whereClause AND w.status = 'pending' AND WEEK(w.date, 1) = WEEK(CURDATE(), 1)");
 $stmt->execute($params);
 $pendingThisWeek = $stmt->fetchColumn();
 

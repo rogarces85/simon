@@ -20,6 +20,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <title><?php echo SITE_NAME; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        // Tailwind Config for CDN usage
         tailwind.config = {
             theme: {
                 extend: {
