@@ -8,4 +8,5 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Other configurations
 define('SITE_NAME', 'RUNCOACH');
-define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/runcoach/'); // Updated to match hosting path
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+define('BASE_URL', 'http://' . $host . '/runcoach/'); // Updated to match hosting path
