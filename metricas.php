@@ -6,6 +6,7 @@ Auth::init();
 Auth::requireRole('coach');
 
 $coach = Auth::user();
+$db = Database::getInstance();
 $athletes = User::getByCoachId($coach['id']);
 
 $athleteId = $_GET['athlete_id'] ?? 'all';
