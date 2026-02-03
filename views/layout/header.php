@@ -101,6 +101,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                         Generar Plan
                     </a>
+                    <a href="reportes.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'reportes' ? 'active' : ''; ?>">
+                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                        Reportes
+                    </a>
                     <a href="metricas.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
                         <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
@@ -133,20 +138,27 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     Notificaciones
                 </a>
 
-                <div class="flex items-center gap-3 px-4 py-3">
-                    <div
-                        class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold">
-                        <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
-                    </div>
+                <a href="perfil.php"
+                    class="flex items-center gap-3 px-4 py-3 group hover:bg-slate-50 rounded-xl transition-all">
+                    <?php if (!empty($currentUser['avatar_url'])): ?>
+                        <img src="<?php echo htmlspecialchars($currentUser['avatar_url']); ?>"
+                            class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                    <?php else: ?>
+                        <div
+                            class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                            <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
+                        </div>
+                    <?php endif; ?>
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-semibold text-slate-900 truncate">
+                        <p
+                            class="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                             <?php echo htmlspecialchars($currentUser['name']); ?>
                         </p>
                         <p class="text-xs text-slate-500">
                             <?php echo $currentUser['role'] === 'coach' ? 'Entrenador' : 'Atleta'; ?>
                         </p>
                     </div>
-                </div>
+                </a>
                 <a href="logout.php"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 font-medium hover:bg-red-50 transition-all">
                     <i data-lucide="log-out" class="w-5 h-5"></i>

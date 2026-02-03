@@ -17,6 +17,8 @@ if ($athlete['coach_id']) {
 $primaryColor = $team['primary_color'] ?? '#3b82f6'; // Blue-500
 // Convert hex to rgb for tailwind opacity usage if needed, or just use style attribute.
 
+require_once 'models/Notification.php';
+
 // Manejar registro de resultados
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'complete_workout') {
     $workoutId = $_POST['workout_id'];
@@ -49,6 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     ];
 
     Workout::update($workoutId, $data);
+
+    // Notify Coach
+    if ($athlete['coach_id']) {
+        $msg = "🏃 " . $athlete['name'] . " completó un entrenamiento: " . ($_POST['feedback'] ? 'Con feedback' : 'Sin feedback');
+        Notification::create($athlete['coach_id'], $msg, 'success');
+    }
+
     header('Location: mi_plan.php?success=1');
     exit;
 }
@@ -92,7 +101,8 @@ include 'views/layout/header.php';
             <?php endif; ?>
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight">¡Hola,
-                    <?php echo htmlspecialchars($athlete['name']); ?>! 👋</h1>
+                    <?php echo htmlspecialchars($athlete['name']); ?>! 👋
+                </h1>
                 <p class="text-white/90 mt-2 font-medium">
                     <?php if ($team): ?>
                         Team <span

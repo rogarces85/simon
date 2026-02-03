@@ -16,9 +16,12 @@ $user = Auth::user();
 if ($user['role'] === 'admin') {
     header('Location: admin_dashboard.php');
     exit;
+    exit;
 } elseif ($user['role'] === 'coach') {
+    require_once 'models/Team.php';
     $athletes = User::getByCoachId($user['id']);
     $athleteCount = count($athletes);
+    $team = Team::findByCoach($user['id']);
 } else {
     header('Location: mi_plan.php'); // Athlete view
     exit;
@@ -29,8 +32,22 @@ include 'views/layout/header.php';
 
 <!-- Page Header -->
 <div class="mb-8">
-    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">PANEL PRINCIPAL</h1>
-    <p class="text-slate-500 mt-1">Bienvenido de nuevo, <?php echo htmlspecialchars($user['name']); ?></p>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">PANEL PRINCIPAL</h1>
+            <p class="text-slate-500 mt-1">Bienvenido de nuevo, <?php echo htmlspecialchars($user['name']); ?></p>
+        </div>
+        <?php if (isset($team) && $team): ?>
+            <div
+                class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-blue-200 flex items-center gap-3">
+                <?php if ($team['logo_url']): ?>
+                    <img src="<?php echo htmlspecialchars($team['logo_url']); ?>"
+                        class="w-8 h-8 rounded-full bg-white border-2 border-white">
+                <?php endif; ?>
+                Team <?php echo htmlspecialchars($team['name']); ?>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <!-- Quick Stats -->
