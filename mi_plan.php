@@ -1,23 +1,49 @@
 <?php
 require_once 'includes/auth.php';
 require_once 'includes/db.php';
-require_once 'models/Workout.php';
-require_once 'models/User.php';
+require_once 'models/Team.php';
 
 Auth::init();
 Auth::requireRole('athlete');
 
 $user = Auth::user();
 $athlete = User::getById($user['id']);
+$team = null;
+if ($athlete['coach_id']) {
+    $team = Team::findByCoach($athlete['coach_id']);
+}
+
+// Branding Defaults
+$primaryColor = $team['primary_color'] ?? '#3b82f6'; // Blue-500
+// Convert hex to rgb for tailwind opacity usage if needed, or just use style attribute.
 
 // Manejar registro de resultados
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'complete_workout') {
     $workoutId = $_POST['workout_id'];
+
+    // Handle Evidence Upload
+    $evidenceUrl = null;
+    if (isset($_FILES['evidence']) && $_FILES['evidence']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = __DIR__ . '/uploads/evidence/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $fileExt = strtolower(pathinfo($_FILES['evidence']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+        if (in_array($fileExt, $allowed)) {
+            $fileName = 'evidence_' . $user['id'] . '_' . time() . '.' . $fileExt;
+            if (move_uploaded_file($_FILES['evidence']['tmp_name'], $uploadDir . $fileName)) {
+                $evidenceUrl = 'uploads/evidence/' . $fileName;
+            }
+        }
+    }
+
     $data = [
         'actual_distance' => $_POST['actual_distance'],
         'actual_time' => $_POST['actual_time'],
         'rpe' => $_POST['rpe'],
         'feedback' => $_POST['feedback'],
+        'evidence_url' => $evidenceUrl,
         'status' => 'completed',
         'completed_at' => date('Y-m-d H:i:s')
     ];
@@ -50,26 +76,44 @@ include 'views/layout/header.php';
 ?>
 
 <!-- Perfil del Atleta (Banner) -->
-<div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-xl">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-            <h1 class="text-3xl font-extrabold tracking-tight">¡Hola,
-                <?php echo htmlspecialchars($athlete['name']); ?>! 👋
-            </h1>
-            <p class="text-blue-100 mt-2 opacity-90">Aquí tienes tu plan para esta semana. Sigue enfocado en tu
-                objetivo: <span class="font-bold underline">
-                    <?php echo htmlspecialchars($athlete['goal_pace'] ?? '-'); ?>/km
-                </span></p>
+<div class="rounded-2xl p-8 mb-8 text-white shadow-xl relative overflow-hidden"
+    style="background-color: <?php echo htmlspecialchars($primaryColor); ?>;">
+
+    <!-- Decorative Circle/Gradient -->
+    <div
+        class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none">
+    </div>
+
+    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="flex items-center gap-6">
+            <?php if (isset($team['logo_url']) && $team['logo_url']): ?>
+                <img src="<?php echo htmlspecialchars($team['logo_url']); ?>" alt="Team Logo"
+                    class="w-20 h-20 rounded-full border-4 border-white/20 bg-white object-cover">
+            <?php endif; ?>
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">¡Hola,
+                    <?php echo htmlspecialchars($athlete['name']); ?>! 👋</h1>
+                <p class="text-white/90 mt-2 font-medium">
+                    <?php if ($team): ?>
+                        Team <span
+                            class="font-bold underlineDecoration"><?php echo htmlspecialchars($team['name']); ?></span>
+                    <?php else: ?>
+                        Plan de Entrenamiento
+                    <?php endif; ?>
+                    • Objetivo: <span
+                        class="font-bold"><?php echo htmlspecialchars($athlete['goal_pace'] ?? '-'); ?>/km</span>
+                </p>
+            </div>
         </div>
+
         <div class="flex gap-4">
             <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-                <span class="block text-xs uppercase text-blue-200 font-bold mb-1">Nivel</span>
-                <span class="text-lg font-bold">
-                    <?php echo htmlspecialchars($athlete['level'] ?? 'Principiante'); ?>
-                </span>
+                <span class="block text-xs uppercase text-white/80 font-bold mb-1">Nivel</span>
+                <span
+                    class="text-lg font-bold"><?php echo htmlspecialchars($athlete['level'] ?? 'Principiante'); ?></span>
             </div>
             <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-                <span class="block text-xs uppercase text-blue-200 font-bold mb-1">Prox. Meta</span>
+                <span class="block text-xs uppercase text-white/80 font-bold mb-1">Prox. Meta</span>
                 <span class="text-lg font-bold">
                     <?php echo $athlete['goal_date'] ? (new DateTime($athlete['goal_date']))->format('d M') : '-'; ?>
                 </span>
@@ -204,7 +248,7 @@ include 'views/layout/header.php';
             </div>
 
             <!-- Formulario de Resultados -->
-            <form method="POST" class="space-y-4">
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
                 <input type="hidden" name="action" value="complete_workout">
                 <input type="hidden" name="workout_id" id="modalWorkoutId">
 
@@ -238,6 +282,17 @@ include 'views/layout/header.php';
                         <span>Muy Fácil</span>
                         <span>Máximo</span>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Evidencia (Opcional)</label>
+                    <input type="file" name="evidence" accept="image/*" class="w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100
+                    " />
                 </div>
 
                 <div>

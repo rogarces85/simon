@@ -6,8 +6,8 @@ class User
     public static function create($data)
     {
         $db = Database::getInstance();
-        $sql = "INSERT INTO users (username, password, role, name, coach_id, goal_date, goal_pace, level, available_days, preferred_long_run_day, max_time_per_session, observations) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO users (username, password, role, name, coach_id, team_id, goal_date, goal_pace, level, available_days, preferred_long_run_day, max_time_per_session, observations) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $db->prepare($sql);
         $stmt->execute([
@@ -16,6 +16,7 @@ class User
             $data['role'] ?? 'athlete',
             $data['name'],
             $data['coach_id'] ?? null,
+            $data['team_id'] ?? null,
             $data['goal_date'] ?? null,
             $data['goal_pace'] ?? null,
             $data['level'] ?? null,
@@ -85,6 +86,14 @@ class User
         $db = Database::getInstance();
         $stmt = $db->prepare("SELECT * FROM users WHERE coach_id = ? AND role = 'athlete' ORDER BY name");
         $stmt->execute([$coachId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function getByRole($role)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM users WHERE role = ? ORDER BY name");
+        $stmt->execute([$role]);
         return $stmt->fetchAll();
     }
 }

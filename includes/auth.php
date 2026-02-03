@@ -58,4 +58,12 @@ class Auth
             exit;
         }
     }
+
+    public static function requireRoleLike($roles)
+    {
+        if (!self::check() || !in_array($_SESSION['role'], $roles)) {
+            header('Location: login.php');
+            exit;
+        }
+    }
 }

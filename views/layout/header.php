@@ -69,7 +69,18 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
             <!-- Navigation -->
             <nav class="flex-1 p-4 space-y-1">
-                <?php if ($currentUser['role'] === 'coach'): ?>
+                <?php if ($currentUser['role'] === 'admin'): ?>
+                    <a href="admin_dashboard.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'admin_dashboard' ? 'active' : ''; ?>">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        Panel Admin
+                    </a>
+                    <a href="crear_entrenador.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'crear_entrenador' ? 'active' : ''; ?>">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                        Crear Entrenador
+                    </a>
+                <?php elseif ($currentUser['role'] === 'coach'): ?>
                     <a href="dashboard.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
                         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
@@ -95,6 +106,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                         Métricas
                     </a>
+                    <a href="config_team.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'config_team' ? 'active' : ''; ?>">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        Configurar Team
+                    </a>
                 <?php else: ?>
                     <a href="mi_plan.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_plan' ? 'active' : ''; ?>">
@@ -111,6 +127,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
             <!-- User Section -->
             <div class="p-4 border-t border-slate-100">
+                <a href="notificaciones.php"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-all mb-2">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    Notificaciones
+                </a>
+
                 <div class="flex items-center gap-3 px-4 py-3">
                     <div
                         class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold">
@@ -121,7 +143,8 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                             <?php echo htmlspecialchars($currentUser['name']); ?>
                         </p>
                         <p class="text-xs text-slate-500">
-                            <?php echo $currentUser['role'] === 'coach' ? 'Entrenador' : 'Atleta'; ?></p>
+                            <?php echo $currentUser['role'] === 'coach' ? 'Entrenador' : 'Atleta'; ?>
+                        </p>
                     </div>
                 </div>
                 <a href="logout.php"

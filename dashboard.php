@@ -12,11 +12,15 @@ if (!Auth::check()) {
 $user = Auth::user();
 
 // Redirect based on role
-if ($user['role'] === 'coach') {
+// Redirect based on role
+if ($user['role'] === 'admin') {
+    header('Location: admin_dashboard.php');
+    exit;
+} elseif ($user['role'] === 'coach') {
     $athletes = User::getByCoachId($user['id']);
     $athleteCount = count($athletes);
 } else {
-    header('Location: mi_plan.php'); // Future: athlete view
+    header('Location: mi_plan.php'); // Athlete view
     exit;
 }
 

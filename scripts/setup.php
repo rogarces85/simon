@@ -40,6 +40,7 @@ try {
             role VARCHAR(50) NOT NULL DEFAULT 'athlete',
             name VARCHAR(255) NOT NULL,
             coach_id INT NULL,
+            team_id INT NULL,
             goal_date DATETIME NULL,
             goal_pace VARCHAR(50) NULL,
             level VARCHAR(50) NULL,
@@ -47,7 +48,28 @@ try {
             preferred_long_run_day VARCHAR(50) NULL,
             max_time_per_session INT NULL,
             observations TEXT NULL,
+            INDEX (coach_id),
+            INDEX (team_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+        "CREATE TABLE IF NOT EXISTS teams (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            coach_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            logo_url VARCHAR(255) NULL,
+            primary_color VARCHAR(50) DEFAULT '#3b82f6',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX (coach_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+        "CREATE TABLE IF NOT EXISTS notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            message TEXT NOT NULL,
+            is_read TINYINT(1) DEFAULT 0,
+            type VARCHAR(50) DEFAULT 'info',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (user_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
 
         "CREATE TABLE IF NOT EXISTS templates (
@@ -73,6 +95,7 @@ try {
             actual_time INT NULL,
             rpe INT NULL,
             feedback TEXT NULL,
+            evidence_url VARCHAR(255) NULL,
             coach_feedback TEXT NULL,
             completed_at DATETIME NULL,
             structure TEXT NULL,
@@ -86,7 +109,41 @@ try {
         echo "✅ Tabla verificada.<br>";
     }
 
-    // 2. Obtener o Crear Coach
+    // 1.1 Columnas Faltantes (Alter Table)
+    // Verificar si falta evidence_url en workouts (para migraciones)
+    try {
+        $db->exec("ALTER TABLE workouts ADD COLUMN evidence_url VARCHAR(255) NULL");
+        echo "✅ Columna evidence_url agregada (o advertencia ignorada).<br>";
+    } catch (PDOException $e) {
+        // Ignorar si ya existe
+    }
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN team_id INT NULL");
+        echo "✅ Columna team_id agregada (o advertencia ignorada).<br>";
+    } catch (PDOException $e) {
+        // Ignorar si ya existe
+    }
+
+    // 2. Obtener o Crear Admin y Coach
+    // ADMIN
+    $adminEmail = 'admin@runcoach.com';
+    $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->execute([$adminEmail]);
+    $existingAdmin = $stmt->fetch();
+
+    if ($existingAdmin) {
+        echo "ℹ️ Admin ya existe.<br>";
+    } else {
+        User::create([
+            'username' => $adminEmail,
+            'password' => password_hash('admin123', PASSWORD_DEFAULT),
+            'role' => 'admin',
+            'name' => 'Administrador Global'
+        ]);
+        echo "✅ Admin creado con éxito.<br>";
+    }
+
+    // COACH
     $coachEmail = 'coach@runcoach.com';
     $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute([$coachEmail]);
