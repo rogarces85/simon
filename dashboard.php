@@ -16,7 +16,6 @@ $user = Auth::user();
 if ($user['role'] === 'admin') {
     header('Location: admin_dashboard.php');
     exit;
-    exit;
 } elseif ($user['role'] === 'coach') {
     require_once 'models/Team.php';
     $athletes = User::getByCoachId($user['id']);

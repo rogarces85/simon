@@ -14,7 +14,8 @@ if ($athlete['coach_id']) {
 }
 
 // Branding Defaults
-$primaryColor = $team['primary_color'] ?? '#3b82f6'; // Blue-500
+// Branding Defaults
+$primaryColor = ($team && isset($team['primary_color'])) ? $team['primary_color'] : '#3b82f6'; // Blue-500
 // Convert hex to rgb for tailwind opacity usage if needed, or just use style attribute.
 
 require_once 'models/Notification.php';
