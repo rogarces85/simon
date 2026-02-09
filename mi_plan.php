@@ -81,6 +81,9 @@ $sunday->modify('+6 days');
 
 $workouts = Workout::getByAthlete($user['id'], $monday->format('Y-m-d 00:00:00'), $sunday->format('Y-m-d 23:59:59'));
 
+// Mark workouts as received when athlete views them
+Workout::markAsReceived($user['id']);
+
 // Indexar entrenamientos por fecha para fácil acceso
 $indexedWorkouts = [];
 foreach ($workouts as $w) {
@@ -213,10 +216,11 @@ include 'views/layout/header.php';
                         </h3>
 
                         <?php if ($workout['status'] === 'completed'): ?>
-                            <div class="flex items-center gap-1 text-green-600 text-xs font-bold mt-2">
+                            <button onclick='openCompletedModal(<?php echo json_encode($workout); ?>)'
+                                class="w-full mt-4 py-2 bg-emerald-50 border border-emerald-500 text-emerald-600 text-xs font-bold rounded-lg hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center gap-1">
                                 <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                Completado
-                            </div>
+                                Ver Detalles
+                            </button>
                         <?php else: ?>
                             <button onclick='openWorkoutModal(<?php echo json_encode($workout); ?>)'
                                 class="w-full mt-4 py-2 bg-white border border-blue-500 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-all">
@@ -330,7 +334,102 @@ include 'views/layout/header.php';
     </div>
 </div>
 
+<!-- Modal Ver Entrenamiento Completado -->
+<div id="completedModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto transform transition-all">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-emerald-50">
+            <div class="flex items-center gap-3">
+                <div class="p-2 rounded-xl bg-emerald-100">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 leading-none" id="completedModalTitle">Entrenamiento
+                        Completado</h3>
+                    <p class="text-sm text-slate-500 mt-1" id="completedModalDate"></p>
+                </div>
+            </div>
+            <button onclick="closeCompletedModal()" class="text-slate-400 hover:text-slate-600 p-2">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <!-- Descripción del entrenamiento -->
+            <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <h4 class="text-xs uppercase font-bold text-blue-500 mb-2 flex items-center gap-2">
+                    <i data-lucide="target" class="w-4 h-4"></i> Entrenamiento Asignado
+                </h4>
+                <p id="completedModalDescription" class="text-slate-800 font-medium"></p>
+                <div id="completedModalStructure"
+                    class="mt-3 text-sm text-slate-600 border-t border-blue-100 pt-3 italic"></div>
+            </div>
+
+            <!-- Resultados del atleta -->
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <h4 class="text-xs uppercase font-bold text-slate-500 mb-4 flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Mis Resultados
+                </h4>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-slate-900" id="completedDistance">-</div>
+                        <div class="text-xs text-slate-500">km recorridos</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-slate-900" id="completedTime">-</div>
+                        <div class="text-xs text-slate-500">minutos</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-slate-900" id="completedRPE">-</div>
+                        <div class="text-xs text-slate-500">RPE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidencia subida -->
+            <div id="evidenceContainer" class="hidden">
+                <h4 class="text-xs uppercase font-bold text-slate-500 mb-2 flex items-center gap-2">
+                    <i data-lucide="image" class="w-4 h-4"></i> Evidencia
+                </h4>
+                <img id="evidenceImage" src="" alt="Evidencia"
+                    class="rounded-xl w-full max-h-48 object-cover border border-slate-200">
+            </div>
+
+            <!-- Mi feedback -->
+            <div id="myFeedbackContainer" class="hidden">
+                <h4 class="text-xs uppercase font-bold text-slate-500 mb-2 flex items-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i> Mi Feedback
+                </h4>
+                <div class="bg-white rounded-xl p-4 border border-slate-200">
+                    <p id="myFeedbackText" class="text-slate-700 text-sm"></p>
+                </div>
+            </div>
+
+            <!-- Respuesta del Coach -->
+            <div id="coachFeedbackContainer" class="hidden">
+                <h4 class="text-xs uppercase font-bold text-emerald-500 mb-2 flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4"></i> Respuesta del Entrenador
+                </h4>
+                <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                    <p id="coachFeedbackText" class="text-slate-700 text-sm"></p>
+                    <p id="coachFeedbackDate" class="text-xs text-emerald-600 mt-2"></p>
+                </div>
+            </div>
+
+            <!-- Sin respuesta del coach aún -->
+            <div id="noCoachFeedbackContainer" class="hidden">
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-center gap-3">
+                    <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
+                    <p class="text-sm text-amber-700">Esperando respuesta del entrenador...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js"></script>
 <script>
+    moment.locale('es');
+
     function openWorkoutModal(workout) {
         const modal = document.getElementById('workoutModal');
         const modalIconContainer = document.getElementById('modalIconContainer');
@@ -339,9 +438,8 @@ include 'views/layout/header.php';
         document.getElementById('modalTitle').innerText = workout.type;
         document.getElementById('modalDate').innerText = moment(workout.date).format('dddd D [de] MMMM');
         document.getElementById('modalDescription').innerText = workout.description;
-        document.getElementById('modalStructure').innerText = workout.structure ? workout.structure : 'No hay detalles adicionales.';
+        document.getElementById('modalStructure').innerText = workout.structure ? (typeof workout.structure === 'string' ? workout.structure : JSON.stringify(workout.structure)) : 'No hay detalles adicionales.';
 
-        // Ajustar colores según tipo
         const types = {
             'Series': 'bg-purple-100 text-purple-600',
             'Intervalos': 'bg-orange-100 text-orange-600',
@@ -357,16 +455,74 @@ include 'views/layout/header.php';
         lucide.createIcons();
     }
 
+    function openCompletedModal(workout) {
+        const modal = document.getElementById('completedModal');
+
+        document.getElementById('completedModalTitle').innerText = workout.type + ' - Completado';
+        document.getElementById('completedModalDate').innerText = moment(workout.completed_at || workout.date).format('dddd D [de] MMMM, YYYY');
+        document.getElementById('completedModalDescription').innerText = workout.description;
+        document.getElementById('completedModalStructure').innerText = workout.structure ? (typeof workout.structure === 'string' ? workout.structure : JSON.stringify(workout.structure)) : 'No hay detalles adicionales.';
+
+        // Results
+        document.getElementById('completedDistance').innerText = workout.actual_distance || '-';
+        document.getElementById('completedTime').innerText = workout.actual_time || '-';
+        document.getElementById('completedRPE').innerText = workout.rpe || '-';
+
+        // Evidence
+        const evidenceContainer = document.getElementById('evidenceContainer');
+        if (workout.evidence_url) {
+            document.getElementById('evidenceImage').src = workout.evidence_url;
+            evidenceContainer.classList.remove('hidden');
+        } else {
+            evidenceContainer.classList.add('hidden');
+        }
+
+        // My feedback
+        const myFeedbackContainer = document.getElementById('myFeedbackContainer');
+        if (workout.feedback) {
+            document.getElementById('myFeedbackText').innerText = workout.feedback;
+            myFeedbackContainer.classList.remove('hidden');
+        } else {
+            myFeedbackContainer.classList.add('hidden');
+        }
+
+        // Coach feedback
+        const coachFeedbackContainer = document.getElementById('coachFeedbackContainer');
+        const noCoachFeedbackContainer = document.getElementById('noCoachFeedbackContainer');
+        if (workout.coach_feedback) {
+            document.getElementById('coachFeedbackText').innerText = workout.coach_feedback;
+            document.getElementById('coachFeedbackDate').innerText = workout.coach_feedback_at ? moment(workout.coach_feedback_at).format('D MMM YYYY, HH:mm') : '';
+            coachFeedbackContainer.classList.remove('hidden');
+            noCoachFeedbackContainer.classList.add('hidden');
+        } else {
+            coachFeedbackContainer.classList.add('hidden');
+            noCoachFeedbackContainer.classList.remove('hidden');
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+    }
+
     function closeModal() {
         document.getElementById('workoutModal').classList.add('hidden');
         document.getElementById('workoutModal').classList.remove('flex');
     }
 
+    function closeCompletedModal() {
+        document.getElementById('completedModal').classList.add('hidden');
+        document.getElementById('completedModal').classList.remove('flex');
+    }
+
     // Cerrar modal si se hace clic fuera del contenido
     window.onclick = function (event) {
         const modal = document.getElementById('workoutModal');
+        const completedModal = document.getElementById('completedModal');
         if (event.target == modal) {
             closeModal();
+        }
+        if (event.target == completedModal) {
+            closeCompletedModal();
         }
     }
 </script>

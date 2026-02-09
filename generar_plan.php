@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         'type' => $template['type'],
                         'description' => $template['name'],
                         'status' => 'pending',
-                        'structure' => $template['structure']
+                        'structure' => $template['structure'],
+                        'delivery_status' => 'sent'
                     ];
 
                     Workout::create($workoutData);

@@ -36,7 +36,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     }
                 }
             }
-    }
+        }
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -107,6 +107,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                         Generar Plan
+                    </a>
+                    <a href="ver_entrenamientos.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'ver_entrenamientos' ? 'active' : ''; ?>">
+                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                        Ver Entrenamientos
                     </a>
                     <a href="reportes.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'reportes' ? 'active' : ''; ?>">
