@@ -10,6 +10,10 @@ Auth::requireRole('coach');
 
 $coach = Auth::user();
 
+// Get athletes for filter
+$athletes = User::getByCoachId($coach['id']);
+$athleteId = $_GET['athlete_id'] ?? 'all';
+
 // Handle coach feedback submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'add_feedback') {
@@ -25,13 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             Notification::create($workout['athlete_id'], $msg, 'info');
         }
 
-        header('Location: ver_entrenamientos.php?success=1');
+        $redirect = 'ver_entrenamientos.php?success=1';
+        if ($athleteId !== 'all')
+            $redirect .= '&athlete_id=' . $athleteId;
+        header('Location: ' . $redirect);
         exit;
     }
 }
 
-// Get all completed workouts for this coach's athletes
-$completedWorkouts = Workout::getCompletedByCoach($coach['id']);
+// Get completed workouts (filtered by athlete if selected)
+$completedWorkouts = Workout::getCompletedByCoach($coach['id'], $athleteId !== 'all' ? $athleteId : null);
 
 // Get plan delivery stats
 $planStats = Workout::getPlanStatsByCoach($coach['id']);
@@ -44,10 +51,25 @@ include 'views/layout/header.php';
 ?>
 
 <!-- Page Header -->
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div>
         <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">ENTRENAMIENTOS COMPLETADOS</h1>
         <p class="text-slate-500 mt-1">Revisa y responde al feedback de tus atletas</p>
+    </div>
+    
+    <!-- Athlete Filter -->
+    <div class="w-full md:w-64">
+        <form method="GET" id="filterForm">
+            <select name="athlete_id" onchange="this.form.submit()"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
+                <option value="all">Todos los Atletas</option>
+                <?php foreach ($athletes as $athlete): ?>
+                    <option value="<?php echo $athlete['id']; ?>" <?php echo $athleteId == $athlete['id'] ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($athlete['name']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </form>
     </div>
 </div>
 

@@ -108,6 +108,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                         Generar Plan
                     </a>
+                    <a href="mis_planes.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mis_planes' ? 'active' : ''; ?>">
+                        <i data-lucide="folder-open" class="w-5 h-5"></i>
+                        Mis Planes Generados
+                    </a>
                     <a href="ver_entrenamientos.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'ver_entrenamientos' ? 'active' : ''; ?>">
                         <i data-lucide="clipboard-check" class="w-5 h-5"></i>

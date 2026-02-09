@@ -13,4 +13,14 @@ define('DB_CHARSET', 'utf8mb4');
 // Other configurations
 define('SITE_NAME', 'RUNCOACH');
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-define('BASE_URL', 'http://' . $host . '/runcoach/'); // Updated to match hosting path
+define('BASE_URL', 'http://' . $host . '/SIMON/');
+
+// Email Configuration (uses PHP mail() by default)
+// Set SMTP_ENABLED to true and fill in SMTP credentials if using external SMTP
+define('SMTP_ENABLED', false);
+define('SMTP_HOST', '');
+define('SMTP_PORT', 587);
+define('SMTP_USER', '');
+define('SMTP_PASS', '');
+define('MAIL_FROM_EMAIL', 'noreply@runcoach.com');
+define('MAIL_FROM_NAME', SITE_NAME);

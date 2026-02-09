@@ -1,8 +1,10 @@
 <?php
 require_once 'includes/auth.php';
 require_once 'includes/db.php';
+require_once 'includes/Mailer.php';
 require_once 'models/User.php';
 require_once 'models/Workout.php';
+require_once 'models/Notification.php';
 Auth::init();
 Auth::requireRole('coach');
 
@@ -23,6 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $athleteId = $_POST['athlete_id'];
         $weekStart = $_POST['week_start'];
         $days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+
+        // Store created workouts for email
+        $createdWorkouts = [];
 
         foreach ($days as $i => $day) {
             $templateId = $_POST['template_' . $day] ?? null;
@@ -46,7 +51,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     ];
 
                     Workout::create($workoutData);
+
+                    // Add to email list
+                    $createdWorkouts[] = [
+                        'date' => $workoutDate,
+                        'type' => $template['type'],
+                        'description' => $template['name']
+                    ];
                 }
+            }
+        }
+
+        // Send email notification to athlete
+        if (!empty($createdWorkouts)) {
+            $athlete = User::getById($athleteId);
+            if ($athlete && $athlete['username']) {
+                Mailer::sendNewPlanNotification(
+                    $athlete['username'], // email
+                    $athlete['name'],
+                    $coach['name'],
+                    $weekStart,
+                    $createdWorkouts
+                );
+
+                // Also create in-app notification
+                $msg = "📋 Tu entrenador ha generado un nuevo plan de entrenamiento para la semana del " . (new DateTime($weekStart))->format('d/m/Y');
+                Notification::create($athleteId, $msg, 'info');
             }
         }
 

@@ -208,18 +208,71 @@ include 'views/layout/header.php';
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña <span
                         id="pwdLabelExtra">*</span></label>
+
+                <!-- Password Mode Selection -->
+                <div class="flex gap-4 mb-3" id="passwordModeSection">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="password_mode" value="auto" checked onchange="togglePasswordMode()"
+                            class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-slate-700">Generar automáticamente</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="password_mode" value="manual" onchange="togglePasswordMode()"
+                            class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm text-slate-700">Ingresar manualmente</span>
+                    </label>
+                </div>
+
                 <div class="flex gap-2">
-                    <input type="text" name="password" id="passwordField"
+                    <input type="text" name="password" id="passwordField" oninput="checkPasswordStrength()"
                         class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-mono outline-none focus:ring-2 focus:ring-blue-500">
                     <button type="button" onclick="togglePassword()"
                         class="px-4 py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
                         <i data-lucide="eye-off" class="w-5 h-5 text-slate-600" id="togglePwdIcon"></i>
                     </button>
-                    <button type="button" onclick="generatePassword()"
+                    <button type="button" onclick="generatePassword()" id="generateBtn"
                         class="px-4 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
                         <i data-lucide="refresh-cw" class="w-5 h-5 text-white"></i>
                     </button>
                 </div>
+
+                <!-- Strength Meter -->
+                <div id="strengthMeter" class="mt-3 hidden">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div id="strengthBar" class="h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <span id="strengthText" class="text-xs font-semibold">-</span>
+                    </div>
+                </div>
+
+                <!-- Password Criteria (shown for manual mode) -->
+                <div id="passwordCriteria" class="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hidden">
+                    <p class="text-xs font-semibold text-slate-700 mb-2">Criterios de contraseña segura:</p>
+                    <ul class="space-y-1 text-xs">
+                        <li id="criteria-length" class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="circle" class="w-3 h-3"></i>
+                            Mínimo 8 caracteres
+                        </li>
+                        <li id="criteria-uppercase" class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="circle" class="w-3 h-3"></i>
+                            Al menos una letra mayúscula (A-Z)
+                        </li>
+                        <li id="criteria-lowercase" class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="circle" class="w-3 h-3"></i>
+                            Al menos una letra minúscula (a-z)
+                        </li>
+                        <li id="criteria-number" class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="circle" class="w-3 h-3"></i>
+                            Al menos un número (0-9)
+                        </li>
+                        <li id="criteria-special" class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="circle" class="w-3 h-3"></i>
+                            Al menos un carácter especial (!@#$%^&*)
+                        </li>
+                    </ul>
+                </div>
+
                 <p class="text-xs text-slate-500 mt-2" id="pwdHelp">La contraseña se genera automáticamente. El atleta
                     podrá cambiarla al iniciar sesión.</p>
             </div>
@@ -341,13 +394,107 @@ include 'views/layout/header.php';
     }
 
     function generatePassword() {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lower = 'abcdefghijkmnpqrstuvwxyz';
+        const numbers = '23456789';
+        const special = '!@#$%^&*';
+
+        // Ensure at least one of each type
         let password = '';
-        for (let i = 0; i < 10; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        password += upper.charAt(Math.floor(Math.random() * upper.length));
+        password += lower.charAt(Math.floor(Math.random() * lower.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += special.charAt(Math.floor(Math.random() * special.length));
+
+        // Fill remaining with random chars
+        const allChars = upper + lower + numbers + special;
+        for (let i = 0; i < 6; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
         }
+
+        // Shuffle the password
+        password = password.split('').sort(() => Math.random() - 0.5).join('');
+
         document.getElementById('passwordField').value = password;
         document.getElementById('passwordField').type = 'text';
+        checkPasswordStrength();
+    }
+
+    function togglePasswordMode() {
+        const mode = document.querySelector('input[name="password_mode"]:checked').value;
+        const generateBtn = document.getElementById('generateBtn');
+        const strengthMeter = document.getElementById('strengthMeter');
+        const criteria = document.getElementById('passwordCriteria');
+        const pwdHelp = document.getElementById('pwdHelp');
+        const passwordField = document.getElementById('passwordField');
+
+        if (mode === 'auto') {
+            generateBtn.classList.remove('hidden');
+            strengthMeter.classList.add('hidden');
+            criteria.classList.add('hidden');
+            pwdHelp.innerText = 'La contraseña se genera automáticamente. El atleta podrá cambiarla al iniciar sesión.';
+            passwordField.readOnly = true;
+            generatePassword();
+        } else {
+            generateBtn.classList.add('hidden');
+            strengthMeter.classList.remove('hidden');
+            criteria.classList.remove('hidden');
+            pwdHelp.innerText = 'Ingresa una contraseña que cumpla con los criterios de seguridad.';
+            passwordField.readOnly = false;
+            passwordField.value = '';
+            passwordField.focus();
+        }
+        lucide.createIcons();
+    }
+
+    function checkPasswordStrength() {
+        const password = document.getElementById('passwordField').value;
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        // Check criteria
+        const criteria = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*]/.test(password)
+        };
+
+        // Update criteria indicators
+        Object.keys(criteria).forEach(key => {
+            const el = document.getElementById('criteria-' + key);
+            if (criteria[key]) {
+                el.classList.remove('text-slate-500');
+                el.classList.add('text-green-600');
+                el.querySelector('i').setAttribute('data-lucide', 'check-circle');
+            } else {
+                el.classList.add('text-slate-500');
+                el.classList.remove('text-green-600');
+                el.querySelector('i').setAttribute('data-lucide', 'circle');
+            }
+        });
+        lucide.createIcons();
+
+        // Calculate strength
+        const passedCriteria = Object.values(criteria).filter(Boolean).length;
+        const percentage = (passedCriteria / 5) * 100;
+
+        strengthBar.style.width = percentage + '%';
+
+        if (passedCriteria <= 2) {
+            strengthBar.className = 'h-full transition-all duration-300 bg-red-500';
+            strengthText.innerText = 'Débil';
+            strengthText.className = 'text-xs font-semibold text-red-500';
+        } else if (passedCriteria <= 4) {
+            strengthBar.className = 'h-full transition-all duration-300 bg-amber-500';
+            strengthText.innerText = 'Media';
+            strengthText.className = 'text-xs font-semibold text-amber-500';
+        } else {
+            strengthBar.className = 'h-full transition-all duration-300 bg-green-500';
+            strengthText.innerText = 'Fuerte';
+            strengthText.className = 'text-xs font-semibold text-green-500';
+        }
     }
 
     function togglePassword() {
