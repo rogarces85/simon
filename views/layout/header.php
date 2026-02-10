@@ -98,11 +98,6 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <i data-lucide="users" class="w-5 h-5"></i>
                         Atletas
                     </a>
-                    <a href="plantillas.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'plantillas' ? 'active' : ''; ?>">
-                        <i data-lucide="file-text" class="w-5 h-5"></i>
-                        Plantillas
-                    </a>
                     <a href="generar_plan.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
                         <i data-lucide="calendar" class="w-5 h-5"></i>
@@ -113,15 +108,10 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                         <i data-lucide="folder-open" class="w-5 h-5"></i>
                         Mis Planes Generados
                     </a>
-                    <a href="ver_entrenamientos.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'ver_entrenamientos' ? 'active' : ''; ?>">
+                    <a href="entrenamientos.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'entrenamientos' ? 'active' : ''; ?>">
                         <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-                        Ver Entrenamientos
-                    </a>
-                    <a href="reportes.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'reportes' ? 'active' : ''; ?>">
-                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                        Reportes
+                        Entrenamientos y Reportes
                     </a>
                     <a href="metricas.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
@@ -137,11 +127,11 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <a href="mi_plan.php"
                         class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_plan' ? 'active' : ''; ?>">
                         <i data-lucide="calendar-check" class="w-5 h-5"></i>
-                        Mi Plan Semanal
+                        Mi Programación
                     </a>
-                    <a href="metricas.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                    <a href="mi_progreso.php"
+                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_progreso' ? 'active' : ''; ?>">
+                        <i data-lucide="trending-up" class="w-5 h-5"></i>
                         Mi Progreso
                     </a>
                 <?php endif; ?>

@@ -283,7 +283,7 @@ class Workout
     }
 
     // Get all workouts by coach (for viewing all generated plans)
-    public static function getAllByCoach($coachId, $athleteId = null, $status = null)
+    public static function getAllByCoach($coachId, $athleteId = null, $status = null, $dateFrom = null, $dateTo = null)
     {
         $db = Database::getInstance();
         $sql = "SELECT w.*, u.name as athlete_name, u.username as athlete_email 
@@ -302,6 +302,16 @@ class Workout
             $params[] = $status;
         }
 
+        if ($dateFrom) {
+            $sql .= " AND w.date >= ?";
+            $params[] = $dateFrom;
+        }
+
+        if ($dateTo) {
+            $sql .= " AND w.date <= ?";
+            $params[] = $dateTo;
+        }
+
         $sql .= " ORDER BY w.date DESC, u.name ASC";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
@@ -316,7 +326,7 @@ class Workout
     }
 
     // Get stats summary for plans
-    public static function getPlansSummaryByCoach($coachId)
+    public static function getPlansSummaryByCoach($coachId, $dateFrom = null, $dateTo = null)
     {
         $db = Database::getInstance();
         $sql = "SELECT 
@@ -328,8 +338,78 @@ class Workout
                 FROM workouts w 
                 INNER JOIN users u ON w.athlete_id = u.id 
                 WHERE u.coach_id = ?";
+        $params = [$coachId];
+
+        if ($dateFrom) {
+            $sql .= " AND w.date >= ?";
+            $params[] = $dateFrom;
+        }
+        if ($dateTo) {
+            $sql .= " AND w.date <= ?";
+            $params[] = $dateTo;
+        }
+
         $stmt = $db->prepare($sql);
-        $stmt->execute([$coachId]);
+        $stmt->execute($params);
         return $stmt->fetch();
+    }
+
+    // Get athlete training streak (consecutive days with completed workouts)
+    public static function getAthleteStreak($athleteId)
+    {
+        $db = Database::getInstance();
+        $sql = "SELECT DISTINCT DATE(date) as workout_date 
+                FROM workouts 
+                WHERE athlete_id = ? AND status = 'completed' AND type != 'Descanso'
+                ORDER BY workout_date DESC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$athleteId]);
+        $dates = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($dates)) return 0;
+
+        $streak = 0;
+        $checkDate = new DateTime();
+        $checkDate->setTime(0, 0, 0);
+
+        // If the most recent workout is not today or yesterday, streak is 0
+        $lastWorkout = new DateTime($dates[0]);
+        $diff = $checkDate->diff($lastWorkout)->days;
+        if ($diff > 1) return 0;
+
+        // Start from the most recent workout date
+        $checkDate = clone $lastWorkout;
+
+        foreach ($dates as $dateStr) {
+            $date = new DateTime($dateStr);
+            if ($date->format('Y-m-d') === $checkDate->format('Y-m-d')) {
+                $streak++;
+                $checkDate->modify('-1 day');
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
+    }
+
+    // Get recent completed workouts for athlete
+    public static function getRecentCompletedByAthlete($athleteId, $limit = 20)
+    {
+        $db = Database::getInstance();
+        $sql = "SELECT * FROM workouts 
+                WHERE athlete_id = ? AND status = 'completed' 
+                ORDER BY completed_at DESC 
+                LIMIT ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$athleteId, $limit]);
+        $workouts = $stmt->fetchAll();
+
+        foreach ($workouts as &$w) {
+            if ($w['structure'])
+                $w['structure'] = json_decode($w['structure'], true);
+        }
+
+        return $workouts;
     }
 }

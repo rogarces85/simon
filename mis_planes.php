@@ -13,16 +13,47 @@ $coach = Auth::user();
 $athletes = User::getByCoachId($coach['id']);
 $athleteId = $_GET['athlete_id'] ?? 'all';
 $statusFilter = $_GET['status'] ?? 'all';
+$periodFilter = $_GET['period'] ?? 'all';
 
-// Get all workouts (filtered by athlete/status if selected)
+// Calculate date range based on period filter
+$dateFrom = null;
+$dateTo = null;
+$now = new DateTime();
+
+switch ($periodFilter) {
+    case 'this_week':
+        $dateFrom = (clone $now)->modify('monday this week')->format('Y-m-d');
+        $dateTo = (clone $now)->modify('sunday this week')->format('Y-m-d');
+        break;
+    case 'last_week':
+        $dateFrom = (clone $now)->modify('monday last week')->format('Y-m-d');
+        $dateTo = (clone $now)->modify('sunday last week')->format('Y-m-d');
+        break;
+    case 'this_month':
+        $dateFrom = $now->format('Y-m-01');
+        $dateTo = $now->format('Y-m-t');
+        break;
+    case 'last_month':
+        $lastMonth = (clone $now)->modify('first day of last month');
+        $dateFrom = $lastMonth->format('Y-m-01');
+        $dateTo = $lastMonth->format('Y-m-t');
+        break;
+    default:
+        // 'all' - no date filter
+        break;
+}
+
+// Get all workouts (filtered)
 $allWorkouts = Workout::getAllByCoach(
     $coach['id'],
     $athleteId !== 'all' ? $athleteId : null,
-    $statusFilter !== 'all' ? $statusFilter : null
+    $statusFilter !== 'all' ? $statusFilter : null,
+    $dateFrom,
+    $dateTo
 );
 
-// Get summary stats
-$plansSummary = Workout::getPlansSummaryByCoach($coach['id']);
+// Get summary stats (with same date filter)
+$plansSummary = Workout::getPlansSummaryByCoach($coach['id'], $dateFrom, $dateTo);
 
 include 'views/layout/header.php';
 ?>
@@ -35,8 +66,16 @@ include 'views/layout/header.php';
     </div>
     
     <!-- Filters -->
-    <div class="flex gap-4 w-full md:w-auto">
-        <form method="GET" id="filterForm" class="flex gap-3">
+    <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <form method="GET" id="filterForm" class="flex flex-wrap gap-3">
+            <select name="period" onchange="this.form.submit()"
+                class="px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
+                <option value="all" <?php echo $periodFilter === 'all' ? 'selected' : ''; ?>>Todos los Períodos</option>
+                <option value="this_week" <?php echo $periodFilter === 'this_week' ? 'selected' : ''; ?>>Esta Semana</option>
+                <option value="last_week" <?php echo $periodFilter === 'last_week' ? 'selected' : ''; ?>>Semana Pasada</option>
+                <option value="this_month" <?php echo $periodFilter === 'this_month' ? 'selected' : ''; ?>>Este Mes</option>
+                <option value="last_month" <?php echo $periodFilter === 'last_month' ? 'selected' : ''; ?>>Mes Anterior</option>
+            </select>
             <select name="athlete_id" onchange="this.form.submit()"
                 class="px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
                 <option value="all">Todos los Atletas</option>
@@ -55,6 +94,14 @@ include 'views/layout/header.php';
         </form>
     </div>
 </div>
+
+<!-- Period indicator -->
+<?php if ($periodFilter !== 'all' && $dateFrom && $dateTo): ?>
+<div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 text-sm">
+    <i data-lucide="calendar" class="w-4 h-4"></i>
+    Mostrando planes del <strong><?php echo (new DateTime($dateFrom))->format('d M Y'); ?></strong> al <strong><?php echo (new DateTime($dateTo))->format('d M Y'); ?></strong>
+</div>
+<?php endif; ?>
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -333,7 +380,7 @@ include 'views/layout/header.php';
         if (workout.feedback && !workout.coach_feedback) {
             html += `
                 <div class="pt-4 border-t border-slate-100">
-                    <a href="ver_entrenamientos.php" class="inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline">
+                    <a href="entrenamientos.php" class="inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         Ir a responder feedback
                     </a>
