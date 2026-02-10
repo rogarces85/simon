@@ -102,9 +102,7 @@ include 'views/layout/header.php';
         </a>
         <div
             class="px-6 py-2 bg-white rounded-xl border border-slate-200 font-bold text-slate-900 text-center min-w-[200px]">
-            <?php echo ucfirst(strftime('%B %Y', $currentMonth->getTimestamp())); ?>
             <?php
-            // Fallback in case strftime doesn't work
             $months_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
             $monthIdx = (int) $currentMonth->format('n') - 1;
             echo $months_es[$monthIdx] . ' ' . $currentMonth->format('Y');
@@ -257,7 +255,8 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                             class="px-2 py-1.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>">
                             <p class="text-xs font-bold truncate"><?php echo htmlspecialchars($workout['type']); ?></p>
                             <p class="text-[10px] truncate opacity-80">
-                                <?php echo htmlspecialchars($workout['description'] ?? ''); ?></p>
+                                <?php echo htmlspecialchars($workout['description'] ?? ''); ?>
+                            </p>
                             <?php if ($isCompleted && $workout['actual_distance']): ?>
                                 <p class="text-[10px] font-semibold mt-0.5"><?php echo $workout['actual_distance']; ?> km</p>
                             <?php endif; ?>

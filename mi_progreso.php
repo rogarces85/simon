@@ -35,8 +35,9 @@ $paceData = [];
 $rpeData = [];
 
 if ($progressionData) {
+    $weekCounter = 1;
     foreach ($progressionData as $week) {
-        $weekLabels[] = 'Sem ' . $week['week_number'];
+        $weekLabels[] = 'Sem ' . $weekCounter++;
         $distanceData[] = round($week['total_distance'] ?? 0, 1);
         $paceData[] = round($week['avg_pace'] ?? 0, 2);
         $rpeData[] = round($week['avg_rpe'] ?? 0, 1);
