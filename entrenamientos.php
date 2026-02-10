@@ -87,7 +87,8 @@ $completedWorkouts = $stmt->fetchAll();
 
 // Decode structures
 foreach ($completedWorkouts as &$w) {
-    if ($w['structure']) $w['structure'] = json_decode($w['structure'], true);
+    if ($w['structure'])
+        $w['structure'] = json_decode($w['structure'], true);
 }
 unset($w);
 
@@ -119,10 +120,14 @@ include 'views/layout/header.php';
             <select name="period" onchange="this.form.submit()"
                 class="px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
                 <option value="all" <?php echo $periodFilter === 'all' ? 'selected' : ''; ?>>Todos los Períodos</option>
-                <option value="this_week" <?php echo $periodFilter === 'this_week' ? 'selected' : ''; ?>>Esta Semana</option>
-                <option value="last_week" <?php echo $periodFilter === 'last_week' ? 'selected' : ''; ?>>Semana Pasada</option>
-                <option value="this_month" <?php echo $periodFilter === 'this_month' ? 'selected' : ''; ?>>Este Mes</option>
-                <option value="last_month" <?php echo $periodFilter === 'last_month' ? 'selected' : ''; ?>>Mes Anterior</option>
+                <option value="this_week" <?php echo $periodFilter === 'this_week' ? 'selected' : ''; ?>>Esta Semana
+                </option>
+                <option value="last_week" <?php echo $periodFilter === 'last_week' ? 'selected' : ''; ?>>Semana Pasada
+                </option>
+                <option value="this_month" <?php echo $periodFilter === 'this_month' ? 'selected' : ''; ?>>Este Mes
+                </option>
+                <option value="last_month" <?php echo $periodFilter === 'last_month' ? 'selected' : ''; ?>>Mes Anterior
+                </option>
             </select>
             <select name="athlete_id" onchange="this.form.submit()"
                 class="px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
@@ -193,10 +198,11 @@ include 'views/layout/header.php';
 
 <!-- Period indicator -->
 <?php if ($periodFilter !== 'all' && $dateFrom && $dateTo): ?>
-<div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 text-sm">
-    <i data-lucide="calendar" class="w-4 h-4"></i>
-    Mostrando del <strong><?php echo (new DateTime($dateFrom))->format('d M Y'); ?></strong> al <strong><?php echo (new DateTime($dateTo))->format('d M Y'); ?></strong>
-</div>
+    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 text-sm">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        Mostrando del <strong><?php echo (new DateTime($dateFrom))->format('d M Y'); ?></strong> al
+        <strong><?php echo (new DateTime($dateTo))->format('d M Y'); ?></strong>
+    </div>
 <?php endif; ?>
 
 <!-- Workouts Table -->
@@ -243,7 +249,8 @@ include 'views/layout/header.php';
                         ?>
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-6 py-4">
-                                <div class="font-medium text-slate-900"><?php echo htmlspecialchars($workout['athlete_name']); ?></div>
+                                <div class="font-medium text-slate-900">
+                                    <?php echo htmlspecialchars($workout['athlete_name']); ?></div>
                             </td>
                             <td class="px-6 py-4 text-slate-600 text-sm">
                                 <?php echo (new DateTime($workout['date']))->format('d M Y'); ?>
@@ -280,9 +287,11 @@ include 'views/layout/header.php';
                             </td>
                             <td class="px-6 py-4">
                                 <?php if ($hasCoachFeedback): ?>
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">✅ Respondido</span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">✅
+                                        Respondido</span>
                                 <?php elseif ($hasAthlFeedback): ?>
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">💬 Pendiente</span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">💬
+                                        Pendiente</span>
                                 <?php else: ?>
                                     <span class="text-slate-400 text-xs">Sin feedback</span>
                                 <?php endif; ?>
@@ -293,7 +302,7 @@ include 'views/layout/header.php';
                                     title="Ver Detalles">
                                     <i data-lucide="eye" class="w-5 h-5"></i>
                                 </button>
-                                <?php if ($workout['evidence_path']): ?>
+                                <?php if (!empty($workout['evidence_path'])): ?>
                                     <a href="<?php echo htmlspecialchars($workout['evidence_path']); ?>" target="_blank"
                                         class="text-green-500 hover:text-green-700 p-2 rounded-lg hover:bg-green-50 transition-all inline-block"
                                         title="Ver Evidencia">
