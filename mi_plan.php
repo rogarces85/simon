@@ -4,6 +4,7 @@ require_once 'includes/db.php';
 require_once 'models/User.php';
 require_once 'models/Workout.php';
 require_once 'models/Team.php';
+require_once 'models/Notification.php';
 
 Auth::init();
 Auth::requireRole('athlete');
@@ -42,6 +43,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
 
         Workout::update($workoutId, $updateData);
+
+        // Notify coach about completed workout
+        if ($user['coach_id']) {
+            $workout = Workout::getById($workoutId);
+            $dateStr = (new DateTime($workout['date']))->format('d/m/Y');
+            $hasFeedback = !empty($_POST['feedback']);
+
+            $message = "✅ {$user['name']} completó su entrenamiento del {$dateStr}";
+            if ($hasFeedback) {
+                $message .= " y dejó feedback para revisar";
+            }
+
+            Notification::create($user['coach_id'], $message, 'info');
+        }
+
         header('Location: mi_plan.php?success=1&month=' . ($_GET['month'] ?? date('Y-m')));
         exit;
     }

@@ -2,6 +2,7 @@
 require_once 'includes/auth.php';
 require_once 'includes/db.php';
 require_once 'models/User.php';
+require_once 'models/Notification.php';
 Auth::init();
 
 if (!Auth::check()) {
@@ -127,6 +128,54 @@ include 'views/layout/header.php';
             Crear Plantilla
         </a>
     </div>
+    </div>
 </div>
+
+<!-- Recent Notifications -->
+<?php
+$recentNotifications = Notification::getUnread($user['id']);
+$notifCount = count($recentNotifications);
+if ($notifCount > 5) {
+    $recentNotifications = array_slice($recentNotifications, 0, 5);
+}
+?>
+<?php if ($notifCount > 0): ?>
+<div class="mt-8">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="bell" class="w-5 h-5 text-blue-600"></i>
+            Notificaciones Recientes
+            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full"><?php echo $notifCount; ?></span>
+        </h2>
+        <a href="notificaciones.php" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+            Ver todas →
+        </a>
+    </div>
+    <div class="space-y-3">
+        <?php foreach ($recentNotifications as $notif): ?>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-3 hover:shadow-md transition-all">
+                <div class="shrink-0">
+                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-slate-900 font-medium text-sm leading-relaxed">
+                        <?php echo htmlspecialchars($notif['message']); ?>
+                    </p>
+                    <span class="text-xs text-slate-400 font-semibold mt-1 block">
+                        <?php echo (new DateTime($notif['created_at']))->format('d M H:i'); ?>
+                    </span>
+                </div>
+                <a href="notificaciones.php?read=<?php echo $notif['id']; ?>" 
+                   class="text-slate-400 hover:text-blue-600 self-start p-1"
+                   title="Marcar como leída">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                </a>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php include 'views/layout/footer.php'; ?>
