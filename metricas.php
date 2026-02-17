@@ -37,6 +37,11 @@ $stmt->execute($params);
 $totalWorkouts = $stmt->fetchColumn();
 $complianceRate = $totalWorkouts > 0 ? round(($completedCount / $totalWorkouts) * 100) : 0;
 
+// NEW: Recent Activity for Sidebar
+$recentStmt = $db->prepare("SELECT w.*, u.name as athlete_name FROM workouts w $whereClause ORDER BY w.date DESC LIMIT 5");
+$recentStmt->execute($params);
+$recentWorkouts = $recentStmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Get individual athlete metrics or all athletes metrics
 if ($athleteId !== 'all') {
     $athleteMetrics = Workout::getAthleteMetrics($athleteId);
@@ -55,319 +60,302 @@ if ($athleteId !== 'all') {
 include 'views/layout/header.php';
 ?>
 
-<!-- Page Header -->
-<div class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<!-- Page Title & Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">MÉTRICAS</h1>
-        <p class="text-slate-500 mt-1">Analiza el progreso de tu equipo</p>
+        <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">Performance Dashboard</h1>
+        <p class="text-[#9cbaab] text-lg">Track your fitness progression and training load over time.</p>
     </div>
-
-    <!-- Athlete Filter -->
-    <div class="w-full md:w-64">
-        <form method="GET" id="filterForm">
-            <select name="athlete_id" onchange="this.form.submit()"
-                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium">
-                <option value="all">Todos los Atletas</option>
-                <?php foreach ($athletes as $athlete): ?>
-                    <option value="<?php echo $athlete['id']; ?>" <?php echo $athleteId == $athlete['id'] ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($athlete['name']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <noscript><button type="submit" class="mt-2 text-sm text-blue-600">Filtrar</button></noscript>
-        </form>
-    </div>
-</div>
-
-<!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900">
-                    <?php echo $athleteId === 'all' ? count($athletes) : 1; ?>
-                </p>
-                <p class="text-sm text-slate-500">Atletas Visualizados</p>
-            </div>
+    <div class="flex items-center gap-3">
+        <!-- Athlete Filter -->
+        <div class="relative">
+            <form method="GET" id="filterForm">
+                <select name="athlete_id" onchange="this.form.submit()"
+                    class="pl-4 pr-10 py-2.5 rounded-lg bg-[#182c23] border border-[#283930] text-white text-sm font-medium hover:bg-[#1e362b] transition-colors appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/50">
+                    <option value="all">All Athletes</option>
+                    <?php foreach ($athletes as $athlete): ?>
+                            <option value="<?php echo $athlete['id']; ?>" <?php echo $athleteId == $athlete['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($athlete['name']); ?>
+                            </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
         </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $completedCount; ?></p>
-                <p class="text-sm text-slate-500">Entrenamientos Completados</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="clock" class="w-6 h-6 text-orange-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $pendingThisWeek; ?></p>
-                <p class="text-sm text-slate-500">Pendientes Esta Semana</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="trending-up" class="w-6 h-6 text-purple-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $complianceRate; ?>%</p>
-                <p class="text-sm text-slate-500">Tasa de Cumplimiento</p>
-            </div>
-        </div>
+        <button
+            class="flex items-center gap-2 bg-[#182c23] border border-[#283930] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#1e362b] transition-colors">
+            <i data-lucide="download" class="w-4 h-4 text-[#9cbaab]"></i>
+            <span>Export</span>
+        </button>
     </div>
 </div>
 
-<?php if ($athleteId !== 'all' && isset($athleteMetrics)): ?>
-    <!-- Individual Athlete Metrics -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Athlete Summary -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
-                <?php echo htmlspecialchars($selectedAthlete['name'] ?? 'Atleta'); ?>
-            </h3>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-slate-600">Distancia Total</span>
-                    <span class="font-bold text-slate-900"><?php echo number_format($athleteMetrics['total_distance'] ?? 0, 1); ?> km</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-slate-600">Tiempo Total</span>
-                    <span class="font-bold text-slate-900"><?php echo number_format($athleteMetrics['total_time'] ?? 0, 0); ?> min</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-slate-600">Ritmo Promedio</span>
-                    <span class="font-bold text-slate-900"><?php echo $athleteMetrics['avg_pace'] ? number_format($athleteMetrics['avg_pace'], 2) . ' min/km' : '-'; ?></span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                    <span class="text-slate-600">RPE Promedio</span>
-                    <span class="font-bold text-slate-900"><?php echo $athleteMetrics['avg_rpe'] ? number_format($athleteMetrics['avg_rpe'], 1) . '/10' : '-'; ?></span>
-                </div>
-                <div class="flex justify-between items-center py-2">
-                    <span class="text-slate-600">Entrenamientos</span>
-                    <span class="font-bold text-slate-900"><?php echo $athleteMetrics['completed_workouts'] ?? 0; ?> completados</span>
-                </div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <!-- Card 1: Total Athletes / Views -->
+    <div class="bg-[#182c23] rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-[#1e362b] rounded-lg text-primary">
+                <i data-lucide="users" class="w-6 h-6"></i>
             </div>
+            <span class="flex items-center text-primary text-sm font-medium bg-primary/10 px-2 py-1 rounded">
+                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +1
+            </span>
         </div>
-
-        <!-- Distance Chart -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <i data-lucide="bar-chart-3" class="w-5 h-5 text-green-600"></i>
-                Volumen Semanal (km)
-            </h3>
-            <div class="h-48">
-                <canvas id="distanceChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Pace Chart -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
-                Evolución de Ritmo (min/km)
-            </h3>
-            <div class="h-48">
-                <canvas id="paceChart"></canvas>
-            </div>
-        </div>
+        <p class="text-[#9cbaab] text-sm font-medium mb-1">Active Athletes</p>
+        <p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">
+            <?php echo $athleteId === 'all' ? count($athletes) : 1; ?>
+        </p>
     </div>
 
-    <!-- RPE Trend -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
-            Tendencia de Esfuerzo Percibido (RPE)
-        </h3>
-        <div class="h-48">
-            <canvas id="rpeChart"></canvas>
+    <!-- Card 2: Completed Workouts -->
+    <div class="bg-[#182c23] rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-[#1e362b] rounded-lg text-primary">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+            </div>
+            <span class="flex items-center text-primary text-sm font-medium bg-primary/10 px-2 py-1 rounded">
+                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +12%
+            </span>
         </div>
+        <p class="text-[#9cbaab] text-sm font-medium mb-1">Completed (All Time)</p>
+        <p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">
+            <?php echo $completedCount; ?>
+        </p>
     </div>
 
-<?php else: ?>
-    <!-- All Athletes Comparison Table -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div class="p-6 border-b border-slate-100">
-            <h3 class="text-lg font-bold text-slate-900">Comparativa de Atletas</h3>
-        </div>
-        <?php if (empty($athletesMetrics)): ?>
-            <div class="p-12 text-center text-slate-500">
-                <i data-lucide="users" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
-                <p>No hay atletas registrados</p>
+    <!-- Card 3: Pending This Week -->
+    <div class="bg-[#182c23] rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-[#1e362b] rounded-lg text-orange-400">
+                <i data-lucide="clock" class="w-6 h-6"></i>
             </div>
+            <span class="flex items-center text-orange-400 text-sm font-medium bg-orange-400/10 px-2 py-1 rounded">
+                <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Due
+            </span>
+        </div>
+        <p class="text-[#9cbaab] text-sm font-medium mb-1">Pending This Week</p>
+        <p class="text-white text-3xl font-bold tracking-tight group-hover:text-orange-400 transition-colors">
+            <?php echo $pendingThisWeek; ?>
+        </p>
+    </div>
+
+    <!-- Card 4: Compliance -->
+    <div class="bg-[#182c23] rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+        <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-[#1e362b] rounded-lg text-purple-400">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+            <span class="flex items-center text-purple-400 text-sm font-medium bg-purple-400/10 px-2 py-1 rounded">
+                <i data-lucide="bar-chart-2" class="w-3 h-3 mr-1"></i> Rate
+            </span>
+        </div>
+        <p class="text-[#9cbaab] text-sm font-medium mb-1">Compliance Rate</p>
+        <p class="text-white text-3xl font-bold tracking-tight group-hover:text-purple-400 transition-colors">
+            <?php echo $complianceRate; ?>%
+        </p>
+    </div>
+</div>
+
+<!-- Main Section: Charts & Side Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+    <!-- Large Chart Area -->
+    <div class="lg:col-span-2 bg-[#182c23] rounded-xl border border-[#283930] p-6 lg:p-8 flex flex-col min-h-[420px]">
+        <?php if ($athleteId !== 'all' && isset($progressionData)): ?>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-white text-lg font-bold">Weekly Volume</h3>
+                        <p class="text-[#9cbaab] text-sm">Distance (km) vs Pace (min/km) over last 8 weeks</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-primary"></span>
+                            <span class="text-xs text-white">Distance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative flex-1 w-full h-full">
+                    <canvas id="mainChart"></canvas>
+                </div>
         <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Atleta</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">Distancia Total</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">Tiempo Total</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">Ritmo Prom.</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">RPE Prom.</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">Cumplimiento</th>
-                            <th class="text-center px-6 py-4 text-sm font-semibold text-slate-600">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <?php foreach ($athletesMetrics as $athlete): ?>
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <span class="font-medium text-slate-900"><?php echo htmlspecialchars($athlete['athlete_name']); ?></span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="font-semibold text-slate-900"><?php echo number_format($athlete['total_distance'] ?? 0, 1); ?> km</span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="text-slate-600"><?php echo number_format($athlete['total_time'] ?? 0, 0); ?> min</span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="text-slate-600"><?php echo $athlete['avg_pace'] ? number_format($athlete['avg_pace'], 2) : '-'; ?></span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <?php if ($athlete['avg_rpe']): ?>
-                                        <span class="px-2 py-1 rounded-full text-xs font-bold <?php 
-                                            echo $athlete['avg_rpe'] <= 5 ? 'bg-green-100 text-green-600' : 
-                                                ($athlete['avg_rpe'] <= 7 ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'); 
-                                        ?>">
-                                            <?php echo number_format($athlete['avg_rpe'], 1); ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-slate-400">-</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <div class="w-16 bg-slate-200 rounded-full h-2">
-                                            <div class="bg-blue-600 h-2 rounded-full" style="width: <?php echo $athlete['compliance_rate']; ?>%"></div>
-                                        </div>
-                                        <span class="text-xs font-medium text-slate-600"><?php echo $athlete['compliance_rate']; ?>%</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <a href="metricas.php?athlete_id=<?php echo $athlete['athlete_id']; ?>" 
-                                       class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                                        Ver Detalles
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-white text-lg font-bold">Team Overview</h3>
+                        <p class="text-[#9cbaab] text-sm">Compliance per Athlete</p>
+                    </div>
+                </div>
+                <?php if (empty($athletesMetrics)): ?>
+                        <div class="flex flex-col items-center justify-center flex-1 text-[#9cbaab]">
+                            <i data-lucide="bar-chart" class="w-12 h-12 mb-2 opacity-50"></i>
+                            <p>No data available</p>
+                        </div>
+                <?php else: ?>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="text-[#9cbaab] text-xs uppercase border-b border-[#283930]">
+                                    <tr>
+                                        <th class="pb-3 pl-2">Athlete</th>
+                                        <th class="pb-3">Distance</th>
+                                        <th class="pb-3">Compliance</th>
+                                        <th class="pb-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <?php foreach ($athletesMetrics as $m): ?>
+                                            <tr class="border-b border-[#283930] last:border-0 group hover:bg-[#1e362b] transition-colors">
+                                                <td class="py-3 pl-2 font-bold text-white"><?php echo htmlspecialchars($m['athlete_name']); ?>
+                                                </td>
+                                                <td class="py-3 text-[#9cbaab]"><?php echo number_format($m['total_distance'], 1); ?> km</td>
+                                                <td class="py-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-24 h-1.5 bg-[#283930] rounded-full overflow-hidden">
+                                                            <div class="h-full bg-primary" style="width: <?php echo $m['compliance_rate']; ?>%">
+                                                            </div>
+                                                        </div>
+                                                        <span class="text-white font-bold"><?php echo $m['compliance_rate']; ?>%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-3 text-right">
+                                                    <a href="metricas.php?athlete_id=<?php echo $m['athlete_id']; ?>"
+                                                        class="text-primary hover:text-white transition-colors text-xs font-bold uppercase">View</a>
+                                                </td>
+                                            </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                <?php endif; ?>
         <?php endif; ?>
     </div>
-<?php endif; ?>
+
+    <!-- Side Stats Panel (Recent Activity) -->
+    <div class="flex flex-col gap-4">
+        <div class="flex-1 bg-[#182c23] rounded-xl border border-[#283930] p-6">
+            <h3 class="text-white text-lg font-bold mb-4">Recent Activities</h3>
+            <div class="flex flex-col gap-3">
+
+                <?php foreach ($recentWorkouts as $workout): ?>
+                        <?php
+                        $iconData = match ($workout['type']) {
+                            'Fondo' => ['icon' => 'mountain', 'bg' => 'bg-blue-500/20', 'text' => 'text-blue-400'],
+                            'Series' => ['icon' => 'zap', 'bg' => 'bg-purple-500/20', 'text' => 'text-purple-400'],
+                            'Intervalos' => ['icon' => 'timer', 'bg' => 'bg-orange-500/20', 'text' => 'text-orange-400'],
+                            'Recuperación' => ['icon' => 'heart', 'bg' => 'bg-green-500/20', 'text' => 'text-green-400'],
+                            default => ['icon' => 'activity', 'bg' => 'bg-[#283930]', 'text' => 'text-white']
+                        };
+                        ?>
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg hover:bg-[#1e362b] transition-colors cursor-pointer group border border-transparent hover:border-[#283930]">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full <?php echo $iconData['bg']; ?> flex items-center justify-center <?php echo $iconData['text']; ?>">
+                                    <i data-lucide="<?php echo $iconData['icon']; ?>" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white text-sm font-bold"><?php echo htmlspecialchars($workout['type']); ?>
+                                    </p>
+                                    <p class="text-[#9cbaab] text-xs"><?php echo htmlspecialchars($workout['athlete_name']); ?>
+                                        • <?php echo (new DateTime($workout['date']))->format('M j'); ?></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <?php if ($workout['status'] === 'completed'): ?>
+                                        <p class="text-white text-sm font-bold group-hover:text-primary transition-colors">
+                                            <?php echo $workout['actual_distance']; ?> km</p>
+                                        <p class="text-[#9cbaab] text-xs"><?php echo $workout['rpe']; ?> RPE</p>
+                                <?php else: ?>
+                                        <span
+                                            class="text-xs text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded">Pending</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                <?php endforeach; ?>
+
+                <?php if (empty($recentWorkouts)): ?>
+                        <p class="text-[#9cbaab] text-sm text-center py-4">No recent activity</p>
+                <?php endif; ?>
+
+            </div>
+        </div>
+
+        <!-- VO2 Max Mini Card (Static Placeholder for Design Match) -->
+        <div
+            class="bg-gradient-to-br from-[#182c23] to-[#1e362b] rounded-xl border border-[#283930] p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <i data-lucide="activity" class="w-24 h-24 text-white"></i>
+            </div>
+            <div class="relative z-10">
+                <p class="text-[#9cbaab] text-sm font-medium mb-1">Team Avg RPE</p>
+                <div class="flex items-baseline gap-2">
+                    <p class="text-white text-4xl font-black">7.2</p>
+                    <p class="text-primary text-sm font-bold flex items-center">
+                        <i data-lucide="arrow-up" class="w-3 h-3"></i> 0.4
+                    </p>
+                </div>
+                <div class="mt-4 w-full bg-[#283930] h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-primary h-full rounded-full" style="width: 72%"></div>
+                </div>
+                <p class="text-[#9cbaab] text-xs mt-2">Moderate / Hard Intensity</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <?php if ($athleteId !== 'all' && isset($progressionData)): ?>
-<script>
-const progressionData = <?php echo json_encode($progressionData); ?>;
+        <script>
+            const progressionData = <?php echo json_encode($progressionData); ?>;
 
-// Prepare data for charts
-const weeks = progressionData.map(d => {
-    const date = new Date(d.week_start);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-});
-const distances = progressionData.map(d => parseFloat(d.total_distance) || 0);
-const paces = progressionData.map(d => d.avg_pace || null);
-const rpes = progressionData.map(d => parseFloat(d.avg_rpe) || null);
+            // Prepare data
+            const weeks = progressionData.map(d => {
+                const date = new Date(d.week_start);
+                return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+            });
+            const distances = progressionData.map(d => parseFloat(d.total_distance) || 0);
 
-// Distance Chart
-new Chart(document.getElementById('distanceChart'), {
-    type: 'bar',
-    data: {
-        labels: weeks,
-        datasets: [{
-            label: 'Kilómetros',
-            data: distances,
-            backgroundColor: '#0df280',
-            borderRadius: 4,
-            hoverBackgroundColor: '#0bc568'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' }, font: { family: 'Lexend' } },
-            x: { border: { display: false }, grid: { display: false }, font: { family: 'Lexend' } }
-        }
-    }
-});
+            const ctx = document.getElementById('mainChart').getContext('2d');
 
-// Pace Chart
-new Chart(document.getElementById('paceChart'), {
-    type: 'line',
-    data: {
-        labels: weeks,
-        datasets: [{
-            label: 'min/km',
-            data: paces,
-            borderColor: '#0df280',
-            backgroundColor: 'rgba(13, 242, 128, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#0df280',
-            borderWidth: 3
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { reverse: true, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' } },
-            x: { border: { display: false }, grid: { display: false } }
-        }
-    }
-});
+            // Gradient for bars
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, '#0df280');
+            gradient.addColorStop(1, 'rgba(13, 242, 128, 0.2)');
 
-// RPE Chart
-new Chart(document.getElementById('rpeChart'), {
-    type: 'line',
-    data: {
-        labels: weeks,
-        datasets: [{
-            label: 'RPE',
-            data: rpes,
-            borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: 'rgb(239, 68, 68)'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: { min: 0, max: 10, grid: { color: 'rgba(0,0,0,0.05)' } },
-            x: { grid: { display: false } }
-        }
-    }
-});
-</script>
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weeks,
+                    datasets: [{
+                        label: 'Distance (km)',
+                        data: distances,
+                        backgroundColor: gradient,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        hoverBackgroundColor: '#0be075'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            border: { display: false },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#9cbaab', font: { family: 'Lexend' } }
+                        },
+                        x: {
+                            border: { display: false },
+                            grid: { display: false },
+                            ticks: { color: '#9cbaab', font: { family: 'Lexend' } }
+                        }
+                    }
+                }
+            });
+        </script>
 <?php endif; ?>
 
 <?php include 'views/layout/footer.php'; ?>

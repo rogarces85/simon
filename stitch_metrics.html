@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Athlete Progress Analytics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df280",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#102219",
+                        "surface-dark": "#182c23", 
+                        "surface-highlight": "#1e362b",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 w-full border-b border-[#283930] bg-[#111814]/95 backdrop-blur">
+<div class="px-6 lg:px-12 py-3 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="text-primary">
+<span class="material-symbols-outlined text-3xl">sprint</span>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Stridely Analytics</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-white text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-white/70 text-sm font-medium hover:text-primary transition-colors" href="#">Training Log</a>
+<a class="text-white/70 text-sm font-medium hover:text-primary transition-colors" href="#">Routes</a>
+<a class="text-white/70 text-sm font-medium hover:text-primary transition-colors" href="#">Community</a>
+</nav>
+<div class="flex items-center gap-6">
+<button class="hidden md:flex items-center justify-center gap-2 h-9 px-4 bg-primary hover:bg-primary/90 text-background-dark text-sm font-bold rounded-lg transition-all">
+<span class="material-symbols-outlined text-lg">upload</span>
+<span>Upload</span>
+</button>
+<div class="flex items-center gap-3 pl-6 border-l border-[#283930]">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-white leading-none">Alex R.</p>
+<p class="text-xs text-[#9cbaab]">Elite Member</p>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="User profile picture of a young man smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDaF14T-9bLv1iZMBzFGdlW8WY-VRBosSB3VkjxD6Jjrw4iRkgWEwLfC1j3ysKFqshvCqbe9G9xGsASdq2FOQFi1Kt3g4unEXUOgi8VrH7lTA1Xq7AboCGjjyQbncRq9HTAC7JObYFR_V3BGrzjhT5zI1z-ZeOEVJTZxXPEvWdr2yhcfVMtGv4QFe2AdwEKurIZ5YiR8vK5B6WPipScKPDZfwri7LAVYvxz4KYbwAE8OzqOLkAuptGaNr8HOmt56a36idaDMVJ5aGE");'></div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-8">
+<!-- Page Title & Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+<div>
+<h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-2">Performance Dashboard</h1>
+<p class="text-[#9cbaab] text-lg">Track your fitness progression and training load over time.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<button class="flex items-center gap-2 bg-surface-dark border border-[#283930] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-highlight transition-colors">
+<span class="material-symbols-outlined text-lg text-[#9cbaab]">calendar_month</span>
+<span>Last 6 Months</span>
+<span class="material-symbols-outlined text-lg text-[#9cbaab]">expand_more</span>
+</button>
+</div>
+<button class="flex items-center gap-2 bg-surface-dark border border-[#283930] text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-highlight transition-colors">
+<span class="material-symbols-outlined text-lg text-[#9cbaab]">download</span>
+<span>Export</span>
+</button>
+</div>
+</div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<!-- Card 1 -->
+<div class="bg-surface-dark rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-highlight rounded-lg text-primary">
+<span class="material-symbols-outlined">directions_run</span>
+</div>
+<span class="flex items-center text-primary text-sm font-medium bg-primary/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                        +12%
+                    </span>
+</div>
+<p class="text-[#9cbaab] text-sm font-medium mb-1">Total Distance (Week)</p>
+<p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">54.2 km</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-dark rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-highlight rounded-lg text-primary">
+<span class="material-symbols-outlined">ecg_heart</span>
+</div>
+<span class="flex items-center text-primary text-sm font-medium bg-primary/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                        +2%
+                    </span>
+</div>
+<p class="text-[#9cbaab] text-sm font-medium mb-1">Avg. RPE</p>
+<p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">7.5 <span class="text-lg text-[#9cbaab] font-normal">/ 10</span></p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-dark rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-highlight rounded-lg text-primary">
+<span class="material-symbols-outlined">landscape</span>
+</div>
+<span class="flex items-center text-red-400 text-sm font-medium bg-red-400/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm mr-1">trending_down</span>
+                        -5%
+                    </span>
+</div>
+<p class="text-[#9cbaab] text-sm font-medium mb-1">Elevation Gain</p>
+<p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">1,240 m</p>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-dark rounded-xl p-6 border border-[#283930] hover:border-primary/30 transition-colors group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-highlight rounded-lg text-primary">
+<span class="material-symbols-outlined">local_fire_department</span>
+</div>
+<span class="flex items-center text-primary text-sm font-medium bg-primary/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                        +8%
+                    </span>
+</div>
+<p class="text-[#9cbaab] text-sm font-medium mb-1">Active Calories</p>
+<p class="text-white text-3xl font-bold tracking-tight group-hover:text-primary transition-colors">4,850 kcal</p>
+</div>
+</div>
+<!-- Main Chart Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Large Chart -->
+<div class="lg:col-span-2 bg-surface-dark rounded-xl border border-[#283930] p-6 lg:p-8 flex flex-col h-[420px]">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-white text-lg font-bold">Pace Evolution</h3>
+<p class="text-[#9cbaab] text-sm">Average pace per month vs. target</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-xs text-white">Actual</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-[#9cbaab]/50 border border-[#9cbaab]"></span>
+<span class="text-xs text-[#9cbaab]">Target</span>
+</div>
+</div>
+</div>
+<div class="relative flex-1 w-full h-full">
+<!-- Custom SVG Chart -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 800 300">
+<!-- Grid Lines -->
+<line stroke="#283930" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="0" y2="0"></line>
+<line stroke="#283930" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="75" y2="75"></line>
+<line stroke="#283930" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
+<line stroke="#283930" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="225" y2="225"></line>
+<line stroke="#283930" stroke-width="1" x1="0" x2="800" y1="300" y2="300"></line>
+<!-- Area Fill -->
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#0df280" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#0df280" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,220 C100,210 150,180 200,160 C300,120 400,140 500,100 C600,60 700,80 800,40 V300 H0 Z" fill="url(#chartGradient)"></path>
+<!-- Line Path -->
+<path d="M0,220 C100,210 150,180 200,160 C300,120 400,140 500,100 C600,60 700,80 800,40" fill="none" stroke="#0df280" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<!-- Data Points -->
+<circle cx="0" cy="220" fill="#102219" r="4" stroke="#0df280" stroke-width="2"></circle>
+<circle cx="200" cy="160" fill="#102219" r="4" stroke="#0df280" stroke-width="2"></circle>
+<circle cx="500" cy="100" fill="#102219" r="4" stroke="#0df280" stroke-width="2"></circle>
+<circle cx="800" cy="40" fill="#0df280" r="6" stroke="#fff" stroke-width="2"></circle>
+<!-- Tooltip Mockup -->
+<g transform="translate(680, 20)">
+<rect fill="#182c23" height="40" rx="4" stroke="#0df280" stroke-width="1" width="100" x="0" y="0"></rect>
+<text fill="#9cbaab" font-family="Lexend" font-size="10" text-anchor="middle" x="50" y="18">June Avg</text>
+<text fill="#fff" font-family="Lexend" font-size="12" font-weight="bold" text-anchor="middle" x="50" y="32">4:45 /km</text>
+</g>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute -bottom-6 w-full flex justify-between text-xs text-[#9cbaab] font-medium px-2">
+<span>Jan</span>
+<span>Feb</span>
+<span>Mar</span>
+<span>Apr</span>
+<span>May</span>
+<span>Jun</span>
+</div>
+</div>
+</div>
+<!-- Side Stats Panel -->
+<div class="flex flex-col gap-4">
+<!-- Recent Activity Compact List -->
+<div class="flex-1 bg-surface-dark rounded-xl border border-[#283930] p-6">
+<h3 class="text-white text-lg font-bold mb-4">Recent Activities</h3>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-highlight transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#283930] flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">schedule</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Morning Run</p>
+<p class="text-[#9cbaab] text-xs">Today, 6:30 AM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-sm font-bold group-hover:text-primary transition-colors">8.5 km</p>
+<p class="text-[#9cbaab] text-xs">5:12 /km</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-highlight transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#283930] flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">bolt</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Intervals</p>
+<p class="text-[#9cbaab] text-xs">Yesterday</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-sm font-bold group-hover:text-primary transition-colors">12.0 km</p>
+<p class="text-[#9cbaab] text-xs">4:45 /km</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-highlight transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#283930] flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-lg">landscape</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Trail Loop</p>
+<p class="text-[#9cbaab] text-xs">Tue, 5:45 PM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-sm font-bold group-hover:text-primary transition-colors">15.2 km</p>
+<p class="text-[#9cbaab] text-xs">6:05 /km</p>
+</div>
+</div>
+</div>
+</div>
+<!-- VO2 Max Mini Card -->
+<div class="bg-gradient-to-br from-surface-dark to-surface-highlight rounded-xl border border-[#283930] p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-9xl">vital_signs</span>
+</div>
+<div class="relative z-10">
+<p class="text-[#9cbaab] text-sm font-medium mb-1">Estimated VO2 Max</p>
+<div class="flex items-baseline gap-2">
+<p class="text-white text-4xl font-black">58</p>
+<p class="text-primary text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm">arrow_upward</span> 1.2
+                            </p>
+</div>
+<div class="mt-4 w-full bg-[#283930] h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 85%"></div>
+</div>
+<p class="text-[#9cbaab] text-xs mt-2">Superior to 85% of age group</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Training Phases Grid -->
+<div class="mb-8">
+<h2 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">fitness_center</span>
+                Training Phases
+            </h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Base Phase -->
+<div class="bg-surface-dark rounded-xl p-5 border border-primary/40 relative overflow-hidden">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-white font-bold">Base Phase</h4>
+<span class="bg-primary text-background-dark text-xs font-bold px-2 py-0.5 rounded">Active</span>
+</div>
+<div class="flex items-center gap-4 mb-3">
+<!-- Donut Chart representation using CSS conic-gradient -->
+<div class="w-12 h-12 rounded-full relative bg-[#283930]" style="background: conic-gradient(#0df280 80%, #283930 0);">
+<div class="absolute inset-0 m-[4px] bg-surface-dark rounded-full flex items-center justify-center">
+<span class="text-xs font-bold text-white">80%</span>
+</div>
+</div>
+<div>
+<p class="text-[#9cbaab] text-xs">Completion</p>
+<p class="text-white text-sm font-medium">4 weeks left</p>
+</div>
+</div>
+<p class="text-[#9cbaab] text-xs">Focus: Aerobic capacity &amp; joint durability.</p>
+</div>
+<!-- Build Phase -->
+<div class="bg-surface-dark rounded-xl p-5 border border-[#283930] opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-white font-bold">Build Phase</h4>
+<span class="bg-[#283930] text-[#9cbaab] text-xs font-bold px-2 py-0.5 rounded">Pending</span>
+</div>
+<div class="flex items-center gap-4 mb-3">
+<div class="w-12 h-12 rounded-full relative bg-[#283930] border-2 border-[#283930] flex items-center justify-center">
+<span class="material-symbols-outlined text-[#52665b]">lock</span>
+</div>
+<div>
+<p class="text-[#9cbaab] text-xs">Starts</p>
+<p class="text-white text-sm font-medium">July 15th</p>
+</div>
+</div>
+<p class="text-[#9cbaab] text-xs">Focus: Threshold intervals &amp; race specificity.</p>
+</div>
+<!-- Peak Phase -->
+<div class="bg-surface-dark rounded-xl p-5 border border-[#283930] opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-white font-bold">Peak Phase</h4>
+<span class="bg-[#283930] text-[#9cbaab] text-xs font-bold px-2 py-0.5 rounded">Pending</span>
+</div>
+<div class="flex items-center gap-4 mb-3">
+<div class="w-12 h-12 rounded-full relative bg-[#283930] border-2 border-[#283930] flex items-center justify-center">
+<span class="material-symbols-outlined text-[#52665b]">lock</span>
+</div>
+<div>
+<p class="text-[#9cbaab] text-xs">Starts</p>
+<p class="text-white text-sm font-medium">Aug 20th</p>
+</div>
+</div>
+<p class="text-[#9cbaab] text-xs">Focus: Max effort &amp; race simulation.</p>
+</div>
+<!-- Taper Phase -->
+<div class="bg-surface-dark rounded-xl p-5 border border-[#283930] opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-start mb-3">
+<h4 class="text-white font-bold">Taper</h4>
+<span class="bg-[#283930] text-[#9cbaab] text-xs font-bold px-2 py-0.5 rounded">Pending</span>
+</div>
+<div class="flex items-center gap-4 mb-3">
+<div class="w-12 h-12 rounded-full relative bg-[#283930] border-2 border-[#283930] flex items-center justify-center">
+<span class="material-symbols-outlined text-[#52665b]">lock</span>
+</div>
+<div>
+<p class="text-[#9cbaab] text-xs">Starts</p>
+<p class="text-white text-sm font-medium">Sept 5th</p>
+</div>
+</div>
+<p class="text-[#9cbaab] text-xs">Focus: Recovery &amp; sharpness.</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>
