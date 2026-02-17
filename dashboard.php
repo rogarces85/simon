@@ -51,173 +51,176 @@ $team = Team::findByCoach($user['id']);
 include 'views/layout/header.php';
 ?>
 
-<!-- Top Welcome Bar -->
-<div
-    style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; background-image: linear-gradient(135deg, rgba(13, 242, 128, 0.05) 0%, transparent 100%);">
-    <div>
-        <span class="badge badge-emerald" style="margin-bottom: 0.75rem;">PANEL DE CONTROL</span>
-        <h2 style="font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1.1;">Buen día,
-            <?php echo explode(' ', $user['name'])[0]; ?> ⚡</h2>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">Tu equipo tiene un <?php echo $complianceRate; ?>% de
-            cumplimiento esta semana.</p>
-    </div>
-    <?php if ($team): ?>
-        <div
-            style="display: flex; align-items: center; gap: 1rem; background: var(--bg-main); padding: 0.75rem 1.5rem; border-radius: 99px; border: 1px solid var(--border);">
-            <?php if ($team['logo_url']): ?>
-                <img src="<?php echo htmlspecialchars($team['logo_url']); ?>"
-                    style="width: 32px; height: 32px; border-radius: 50%;">
-            <?php endif; ?>
-            <span style="font-weight: 700; font-size: 0.9rem;"><?php echo htmlspecialchars($team['name']); ?></span>
+<!-- Stitch-inspired Header -->
+<header style="display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-bottom: 2rem;">
+    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">
+            <span>Management</span>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span style="color: var(--text-main);">Dashboard</span>
         </div>
-    <?php endif; ?>
-</div>
+        <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em; line-height: 1.1; margin-top: 0.25rem;">
+            Hola, <?php echo explode(' ', $user['name'])[0]; ?>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1rem;">Visión general del rendimiento de tu equipo.</p>
+    </div>
+    <div>
+        <a href="generar_plan.php" class="btn btn-primary" style="box-shadow: 0 0 15px rgba(13, 242, 128, 0.3);">
+            <i data-lucide="plus" style="width: 20px; height: 20px; margin-right: 0.5rem;"></i>
+            Nuevo Plan
+        </a>
+    </div>
+</header>
 
 <!-- Stats Grid -->
-<div
-    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div
-                style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; color: #3b82f6; display: flex; align-items: center; justify-content: center;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <!-- Active Athletes -->
+    <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(13, 242, 128, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="users" style="width: 20px; height: 20px;"></i>
             </div>
-            <span class="badge badge-blue">Atletas</span>
+            <span class="badge badge-emerald">+<?php echo $activeAthletesThisWeek; ?> activos</span>
         </div>
-        <div class="stat-value"><?php echo $athleteCount; ?></div>
-        <div class="stat-label">Corredores vinculados</div>
+        <div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1;"><?php echo $athleteCount; ?></div>
+            <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 500; margin-top: 0.25rem;">Atletas Totales</div>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div
-                style="width: 40px; height: 40px; background: rgba(168, 85, 247, 0.1); border-radius: 8px; color: #a855f7; display: flex; align-items: center; justify-content: center;">
+    <!-- Compliance -->
+    <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+            </div>
+            <span class="badge badge-blue">Semanal</span>
+        </div>
+        <div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1;"><?php echo $complianceRate; ?>%</div>
+            <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 500; margin-top: 0.25rem;">Cumplimiento</div>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(168, 85, 247, 0.1); color: #a855f7; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
             </div>
-            <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">Plantillas</span>
         </div>
-        <div class="stat-value"><?php echo $templateCount; ?></div>
-        <div class="stat-label">Modelos de entrenamiento</div>
+        <div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1;"><?php echo $templateCount; ?></div>
+            <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 500; margin-top: 0.25rem;">Plantillas</div>
+        </div>
     </div>
-
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div
-                style="width: 40px; height: 40px; background: rgba(13, 242, 128, 0.1); border-radius: 8px; color: var(--primary); display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="calendar-check" style="width: 20px; height: 20px;"></i>
+    
+    <!-- Pending Reviews (Mockup/Placeholder logic for now or count unread notifications) -->
+    <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
             </div>
-            <span class="badge badge-emerald">Activos</span>
         </div>
-        <div class="stat-value"><?php echo $activeAthletesThisWeek; ?></div>
-        <div class="stat-label">Planes esta semana</div>
-    </div>
-
-    <div class="stat-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div
-                style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; color: #f59e0b; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
-            </div>
-            <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">Target</span>
+        <div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); line-height: 1;"><?php echo count(Notification::getUnread($user['id'])); ?></div>
+            <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 500; margin-top: 0.25rem;">Notificaciones</div>
         </div>
-        <div class="stat-value"><?php echo $complianceRate; ?>%</div>
-        <div class="stat-label">Cumplimiento global</div>
     </div>
 </div>
 
-<!-- Main Content Area -->
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    <!-- Recent Activity -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-size: 1.25rem; font-weight: 700;">Actividad Reciente</h3>
-            <a href="entrenamientos.php"
-                style="font-size: 0.875rem; color: var(--primary); font-weight: 600; text-decoration: none;">Ver todos
-                los reportes</a>
+<!-- Main Section: Activity & Quick Access -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    
+    <!-- Recent Activity Table (Stitch Style) -->
+    <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin: 0;">Actividad Reciente</h3>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" style="padding: 0.4rem 0.75rem; font-size: 0.75rem;"><i data-lucide="filter" style="width: 14px; height: 14px; margin-right: 4px;"></i> Filtrar</button>
+            </div>
         </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="background: rgba(0,0,0,0.2);">
+                    <tr>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Atleta</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Sesión</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Fecha</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); text-align: right;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 0.875rem;">
+                    <?php
+                    $stmt = $db->prepare("SELECT w.*, u.name as athlete_name, u.avatar_url 
+                                         FROM workouts w 
+                                         JOIN users u ON w.athlete_id = u.id 
+                                         WHERE u.coach_id = ? AND w.status = 'completed'
+                                         ORDER BY w.date DESC LIMIT 5");
+                    $stmt->execute([$user['id']]);
+                    $recentActivities = $stmt->fetchAll();
 
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <?php
-            // Fetch literal recent workouts with feedback
-            $stmt = $db->prepare("SELECT w.*, u.name as athlete_name 
-                                 FROM workouts w 
-                                 JOIN users u ON w.athlete_id = u.id 
-                                 WHERE u.coach_id = ? AND w.status = 'completed'
-                                 ORDER BY w.date DESC LIMIT 5");
-            $stmt->execute([$user['id']]);
-            $recentActivities = $stmt->fetchAll();
-
-            if (empty($recentActivities)): ?>
-                <div class="card" style="text-align: center; padding: 3rem;">
-                    <i data-lucide="activity"
-                        style="width: 48px; height: 48px; color: var(--border); margin-bottom: 1rem;"></i>
-                    <p style="color: var(--text-muted);">No hay actividades registradas recientemente.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($recentActivities as $act): ?>
-                    <div class="card" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <div
-                            style="width: 48px; height: 48px; background: var(--bg-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); border: 2px solid var(--border);">
-                            <?php echo strtoupper(substr($act['athlete_name'], 0, 1)); ?>
-                        </div>
-                        <div style="flex: 1;">
-                            <h4 style="font-size: 0.9rem; font-weight: 700; margin: 0;">
-                                <?php echo htmlspecialchars($act['athlete_name']); ?></h4>
-                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
-                                <?php echo htmlspecialchars($act['type']); ?> -
-                                <?php echo (new DateTime($act['date']))->format('d M'); ?></p>
-                        </div>
-                        <div style="text-align: right;">
-                            <span class="badge badge-emerald">Completado</span>
-                        </div>
-                        <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--border);"></i>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    if (empty($recentActivities)): ?>
+                        <tr><td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-muted);">No hay actividad reciente.</td></tr>
+                    <?php else: foreach ($recentActivities as $act): ?>
+                        <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: 1rem 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <?php if ($act['avatar_url']): ?>
+                                        <img src="<?php echo htmlspecialchars($act['avatar_url']); ?>" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                    <?php else: ?>
+                                        <div style="width: 32px; height: 32px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem;">
+                                            <?php echo strtoupper(substr($act['athlete_name'], 0, 1)); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span style="font-weight: 600; color: var(--text-main);"><?php echo htmlspecialchars($act['athlete_name']); ?></span>
+                                </div>
+                            </td>
+                            <td style="padding: 1rem 1.5rem; color: var(--text-muted); font-weight: 500;">
+                                <?php echo htmlspecialchars($act['type']); ?>
+                            </td>
+                            <td style="padding: 1rem 1.5rem; color: var(--text-muted);">
+                                <?php echo (new DateTime($act['date']))->format('d M, Y'); ?>
+                            </td>
+                            <td style="padding: 1rem 1.5rem; text-align: right;">
+                                <span class="badge badge-emerald">Completado</span>
+                            </td>
+                        </tr>
+                    <?php endforeach; endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <div style="padding: 1rem; border-top: 1px solid var(--border); text-align: center;">
+            <a href="entrenamientos.php" style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">
+                Ver todo el historial <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            </a>
         </div>
     </div>
 
-    <!-- Quick Actions & Notifications -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 700;">Herramientas Rápidas</h3>
-
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <a href="generar_plan.php" class="card"
-                style="text-decoration: none; padding: 1.25rem; background: var(--primary); color: #0f172a; border: none;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <i data-lucide="plus-circle" style="width: 24px; height: 24px;"></i>
-                    <div>
-                        <h4 style="font-weight: 700;">Crear Nuevo Plan</h4>
-                        <p style="font-size: 0.75rem; opacity: 0.8;">Asignar semana a un atleta</p>
-                    </div>
-                </div>
-            </a>
-
-            <div class="card" style="padding: 1.25rem;">
-                <h4 style="font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i data-lucide="bell" style="width: 18px; height: 18px; color: var(--primary);"></i>
-                    Notificaciones
-                </h4>
-                <?php
-                $notifs = Notification::getUnread($user['id']);
-                if (empty($notifs)): ?>
-                    <p style="font-size: 0.8rem; color: var(--text-muted);">Sin avisos pendientes.</p>
-                <?php else: ?>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <?php foreach (array_slice($notifs, 0, 3) as $n): ?>
-                            <div style="font-size: 0.8rem; border-left: 2px solid var(--primary); padding-left: 0.75rem;">
-                                <p style="margin: 0; font-weight: 500;"><?php echo htmlspecialchars($n['message']); ?></p>
-                                <span
-                                    style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.6;"><?php echo (new DateTime($n['created_at']))->format('H:i'); ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                        <a href="notificaciones.php"
-                            style="font-size: 0.75rem; color: var(--primary); font-weight: 600; text-decoration: none; margin-top: 0.5rem;">Ver
-                            todas</a>
-                    </div>
-                <?php endif; ?>
+    <!-- Side Actions -->
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="card" style="padding: 1.25rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Accesos Rápidos</h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <a href="atletas.php" class="btn btn-secondary" style="justify-content: start; border: 1px solid var(--border); color: var(--text-muted);">
+                    <i data-lucide="user-plus" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i> Gestionar Atletas
+                </a>
+                <a href="config_team.php" class="btn btn-secondary" style="justify-content: start; border: 1px solid var(--border); color: var(--text-muted);">
+                    <i data-lucide="settings" style="width: 18px; height: 18px; margin-right: 0.5rem;"></i> Configurar Team
+                </a>
             </div>
         </div>
+
+        <!-- Team Branding Preview -->
+        <?php if ($team): ?>
+            <div class="card" style="padding: 1.5rem; text-align: center; background: linear-gradient(180deg, var(--bg-card) 0%, rgba(13, 242, 128, 0.02) 100%);">
+                <?php if ($team['logo_url']): ?>
+                    <img src="<?php echo htmlspecialchars($team['logo_url']); ?>" style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 1rem; border: 4px solid var(--bg-main);">
+                <?php endif; ?>
+                <h4 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($team['name']); ?></h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Team ID: #<?php echo $team['id']; ?></p>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

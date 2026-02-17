@@ -36,19 +36,25 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 <body>
     <div class="flex">
         <!-- Sidebar -->
+        <!-- Sidebar -->
         <aside class="sidebar">
-            <div style="padding: 2rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div
-                        style="width: 40px; height: 40px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <i data-lucide="zap" style="color: #0f172a; width: 24px; height: 24px;"></i>
+            <!-- Profile Section (Top) -->
+            <div style="padding: 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border);">
+                 <?php if (!empty($currentUser['avatar_url'])): ?>
+                    <img src="<?php echo htmlspecialchars($currentUser['avatar_url']); ?>" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--border); object-fit: cover;">
+                <?php else: ?>
+                    <div style="width: 48px; height: 48px; background: var(--bg-card); border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <i data-lucide="user"></i>
                     </div>
-                    <span
-                        style="font-size: 1.5rem; font-weight: 700; tracking: -0.05em; color: var(--text-main);">SIMON</span>
+                <?php endif; ?>
+                <div style="display: flex; flex-direction: column;">
+                    <h1 style="font-size: 1rem; font-weight: 700; color: var(--text-main); line-height: 1.2;"><?php echo htmlspecialchars($currentUser['name']); ?></h1>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;"><?php echo ucfirst($currentUser['role']); ?></p>
                 </div>
             </div>
 
-            <nav style="flex: 1; overflow-y: auto;">
+            <!-- Navigation -->
+            <nav style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;">
                 <?php if ($currentUser['role'] === 'admin'): ?>
                     <a href="admin_dashboard.php"
                         class="nav-link <?php echo $currentPage === 'admin_dashboard' ? 'active' : ''; ?>">
@@ -90,46 +96,25 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                 <?php endif; ?>
             </nav>
 
-            <!-- Bottom Section -->
-            <div style="padding: 1rem; border-top: 1px solid var(--border); background: rgba(0,0,0,0.02);">
-                <!-- Theme Toggle -->
-                <div
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; margin-bottom: 1rem;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">MODO DARK</span>
-                    <label class="theme-switch" for="themeCheckbox">
+            <!-- Bottom Actions -->
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border);">
+                 <a href="<?php echo $currentUser['role'] === 'coach' ? 'generar_plan.php' : 'perfil.php'; ?>" class="btn btn-secondary" style="width: 100%; justify-content: start; gap: 0.5rem; color: var(--text-main); border: 1px solid var(--border); background: var(--bg-card); margin-bottom: 1rem; padding: 0.75rem;">
+                    <i data-lucide="<?php echo $currentUser['role'] === 'coach' ? 'plus-circle' : 'user-cog'; ?>" style="color: var(--primary);"></i>
+                    <span><?php echo $currentUser['role'] === 'coach' ? 'Nuevo Plan' : 'Mi Perfil'; ?></span>
+                 </a>
+                 
+                 <!-- Footer Links (Logout/Theme) in a row -->
+                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                     <!-- Theme Switch -->
+                     <label class="theme-switch" for="themeCheckbox" title="Cambiar Tema">
                         <input type="checkbox" id="themeCheckbox" />
                         <div class="slider"></div>
                     </label>
-                </div>
-
-                <a href="perfil.php"
-                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; text-decoration: none; border-radius: 8px; transition: background 0.2s;"
-                    onmouseover="this.style.background='rgba(13, 242, 128, 0.05)'"
-                    onmouseout="this.style.background='transparent'">
-                    <?php if (!empty($currentUser['avatar_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($currentUser['avatar_url']); ?>"
-                            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                    <?php else: ?>
-                        <div
-                            style="width: 32px; height: 32px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
-                            <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
-                        </div>
-                    <?php endif; ?>
-                    <div style="flex: 1; overflow: hidden;">
-                        <p
-                            style="font-size: 0.875rem; font-weight: 600; color: var(--text-main); margin: 0; line-height: 1.2;">
-                            <?php echo htmlspecialchars($currentUser['name']); ?></p>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">
-                            <?php echo ucfirst($currentUser['role']); ?></p>
-                    </div>
-                </a>
-
-                <a href="logout.php"
-                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; color: #ef4444; text-decoration: none; font-size: 0.875rem; font-weight: 600; margin-top: 0.5rem; border-radius: 8px;"
-                    onmouseover="this.style.background='rgba(239, 68, 68, 0.05)'"
-                    onmouseout="this.style.background='transparent'">
-                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i> Salir
-                </a>
+                    
+                    <a href="logout.php" style="color: #ef4444; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                        <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Salir
+                    </a>
+                 </div>
             </div>
         </aside>
 

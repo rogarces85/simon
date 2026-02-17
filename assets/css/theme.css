@@ -17,12 +17,12 @@
 }
 
 :root[data-theme="dark"] {
-    /* Color Palette - Dark Mode */
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
+    /* Color Palette - Dark Mode (Stitch Design) */
+    --bg-main: #111814;
+    --bg-card: #1a241f;
     --text-main: #f1f5f9;
-    --text-muted: #94a3b8;
-    --border: #334155;
+    --text-muted: #9cbaab;
+    --border: #283930;
     --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
@@ -49,7 +49,7 @@ body {
 /* Layout utilities */
 .sidebar {
     width: 280px;
-    background-color: var(--bg-card);
+    background-color: #111814; /* Match Stitch Sidebar Bg */
     border-right: 1px solid var(--border);
     position: fixed;
     height: 100vh;
@@ -63,6 +63,7 @@ body {
     margin-left: 280px;
     padding: 2rem;
     min-height: 100vh;
+    background-color: var(--bg-main);
 }
 
 /* UI Components based on Stitch Design */
@@ -81,22 +82,26 @@ body {
 
 .btn-primary {
     background-color: var(--primary);
-    color: #0f172a;
+    color: #111814; /* Dark text on primary */
+    box-shadow: 0 0 15px rgba(13, 242, 128, 0.3); /* Stitch Glow */
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(13, 242, 128, 0.5);
 }
 
 .btn-secondary {
     background-color: transparent;
-    color: var(--text-main);
+    color: var(--text-muted); /* Muted text for secondary */
     border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
     background-color: var(--bg-card);
+    color: var(--text-main);
+    border-color: var(--primary);
 }
 
 .card {
@@ -109,7 +114,8 @@ body {
 }
 
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
+    border-color: rgba(13, 242, 128, 0.2);
 }
 
 /* Nav Link Styles */
