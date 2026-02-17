@@ -6,27 +6,27 @@ SIMON es una plataforma web modular diseñada para entrenadores y atletas de run
 
 ### Para Entrenadores
 - **Gestión de Atletas**: Registro y seguimiento personalizado de corredores.
-- **Plantillas de Entrenamiento**: Creación de sesiones reutilizables (Series, Fondo, Tempo, etc.).
-- **Generación de Planes**: Creación de planes semanales con **personalización individual** de instrucciones para cada atleta sin necesidad de duplicar plantillas.
-- **Landing Page**: Página de inicio de alta fidelidad con soporte para **Modo Oscuro (Dark) y Claro (Light)**.
-- **Dashboard de Métricas**: Visualización del cumplimiento de los planes y feedback de los atletas.
+- **Plantillas de Entrenamiento**: Creación de sesiones reutilizables con estructura profesional.
+- **Generación de Planes**: Asignación semanal con **edición dinámica** de instrucciones por día.
+- **Coach Dashboard**: Panel de control con métricas en tiempo real, racha de los atletas y resumen semanal.
 
 ### Para Atletas
-- **Calendario Semanal**: Visualización clara de los entrenamientos asignados.
-- **Interfaz Adaptativa**: Soporte para temas oscuro/claro según preferencia.
-- **Registro de Resultados**: Carga de distancia, tiempo, ritmo y esfuerzo percibido (RPE).
+- **Calendario Semanal**: Interfaz tipo checklist para visualización clara de sesiones.
+- **Registro de Resultados**: Carga de métricas (km, tiempo, RPE) con soporte para feedback al coach.
+- **Analytics de Progreso**: Gráficos premium de volumen, ritmo y cumplimiento.
+- **Interfaz Universal**: Soporte full para **Modo Oscuro (Dark) y Claro (Light)** en todas las vistas internas.
 
 ## 🛠️ Arquitectura Técnica
 
 El sistema está construido como un monolito PHP modular y escalable:
 - **Backend**: PHP (MVC simplificado).
 - **Base de Datos**: MySQL.
-- **Frontend**: HTML5, Vanilla JS, CSS3 (Tailwind CSS vía CDN + Google Stitch Tokens).
-- **Sistema de Diseño**:
+- **Frontend**: HTML5, Vanilla JS, CSS3 (Google Stitch Inspired Design System).
+- **Sistema de Diseño (Emerald)**:
   - **Tipografía**: Lexend (Google Fonts).
-  - **Color Primario**: Emerald Green (#0df280).
-  - **Bordes**: 8px (Round_Eight).
-  - **Temas**: Soporte nativo para Dark y Light mode mediante variables CSS.
+  - **Color Primario**: Emerald Green (`#0df280`).
+  - **Componentes**: Botones, Tarjetas y Badges con 8px de redondeado (`Round_Eight`).
+  - **Tematización**: Soporte nativo para Dark y Light mode centralizado en `theme.css`.
 
 
 ## 📋 PRD (Documento de Requerimientos del Producto)

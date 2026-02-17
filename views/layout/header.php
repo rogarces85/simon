@@ -18,161 +18,161 @@ if ($dbUser) {
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo SITE_NAME; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwind Config for CDN usage
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3b82f6',
-                        sidebar: '#1e293b',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="assets/css/theme.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .sidebar-link {
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-link:hover {
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .sidebar-link.active {
-            background: #3b82f6;
-            color: white;
-        }
-    </style>
+    <script>
+        // Init theme before render to avoid flash
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+    </script>
 </head>
 
-<body class="bg-slate-50 min-h-screen">
-    <div class="flex min-h-screen">
+<body>
+    <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full">
-            <!-- Logo -->
-            <div class="p-6 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                        <i data-lucide="dumbbell" class="w-5 h-5 text-white rotate-[-45deg]"></i>
+        <aside class="sidebar">
+            <div style="padding: 2rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div
+                        style="width: 40px; height: 40px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="zap" style="color: #0f172a; width: 24px; height: 24px;"></i>
                     </div>
-                    <span class="text-xl font-bold text-slate-900">RUNCOACH</span>
+                    <span
+                        style="font-size: 1.5rem; font-weight: 700; tracking: -0.05em; color: var(--text-main);">SIMON</span>
                 </div>
             </div>
 
-            <!-- Navigation -->
-            <nav class="flex-1 p-4 space-y-1">
+            <nav style="flex: 1; overflow-y: auto;">
                 <?php if ($currentUser['role'] === 'admin'): ?>
                     <a href="admin_dashboard.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'admin_dashboard' ? 'active' : ''; ?>">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                        Panel Admin
-                    </a>
-                    <a href="crear_entrenador.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'crear_entrenador' ? 'active' : ''; ?>">
-                        <i data-lucide="user-plus" class="w-5 h-5"></i>
-                        Crear Entrenador
+                        class="nav-link <?php echo $currentPage === 'admin_dashboard' ? 'active' : ''; ?>">
+                        <i data-lucide="layout-dashboard"></i> Panel Admin
                     </a>
                 <?php elseif ($currentUser['role'] === 'coach'): ?>
-                    <a href="dashboard.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
-                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                        Panel Principal
+                    <a href="dashboard.php" class="nav-link <?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
+                        <i data-lucide="layout-dashboard"></i> Dashboard
                     </a>
-                    <a href="atletas.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'atletas' ? 'active' : ''; ?>">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                        Atletas
+                    <a href="atletas.php" class="nav-link <?php echo $currentPage === 'atletas' ? 'active' : ''; ?>">
+                        <i data-lucide="users"></i> Atletas
                     </a>
                     <a href="generar_plan.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
-                        <i data-lucide="calendar" class="w-5 h-5"></i>
-                        Generar Plan
+                        class="nav-link <?php echo $currentPage === 'generar_plan' ? 'active' : ''; ?>">
+                        <i data-lucide="calendar-plus"></i> Generar Plan
                     </a>
-                    <a href="mis_planes.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mis_planes' ? 'active' : ''; ?>">
-                        <i data-lucide="folder-open" class="w-5 h-5"></i>
-                        Mis Planes Generados
+                    <a href="mis_planes.php" class="nav-link <?php echo $currentPage === 'mis_planes' ? 'active' : ''; ?>">
+                        <i data-lucide="folder-open"></i> Planes
                     </a>
                     <a href="entrenamientos.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'entrenamientos' ? 'active' : ''; ?>">
-                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-                        Entrenamientos y Reportes
+                        class="nav-link <?php echo $currentPage === 'entrenamientos.php' ? 'active' : ''; ?>">
+                        <i data-lucide="clipboard-list"></i> Reportes
                     </a>
-                    <a href="metricas.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                        Métricas
+                    <a href="metricas.php" class="nav-link <?php echo $currentPage === 'metricas' ? 'active' : ''; ?>">
+                        <i data-lucide="bar-chart-big"></i> Métricas
                     </a>
                     <a href="config_team.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'config_team' ? 'active' : ''; ?>">
-                        <i data-lucide="settings" class="w-5 h-5"></i>
-                        Configurar Team
+                        class="nav-link <?php echo $currentPage === 'config_team' ? 'active' : ''; ?>">
+                        <i data-lucide="settings"></i> Team
                     </a>
                 <?php else: ?>
-                    <a href="mi_plan.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_plan' ? 'active' : ''; ?>">
-                        <i data-lucide="calendar-check" class="w-5 h-5"></i>
-                        Mi Programación
+                    <a href="mi_plan.php" class="nav-link <?php echo $currentPage === 'mi_plan' ? 'active' : ''; ?>">
+                        <i data-lucide="calendar-range"></i> Mi Plan
                     </a>
                     <a href="mi_progreso.php"
-                        class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium <?php echo $currentPage === 'mi_progreso' ? 'active' : ''; ?>">
-                        <i data-lucide="trending-up" class="w-5 h-5"></i>
-                        Mi Progreso
+                        class="nav-link <?php echo $currentPage === 'mi_progreso' ? 'active' : ''; ?>">
+                        <i data-lucide="activity"></i> Mi Progreso
                     </a>
                 <?php endif; ?>
             </nav>
 
-            <!-- User Section -->
-            <div class="p-4 border-t border-slate-100">
-                <a href="notificaciones.php"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-all mb-2">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    Notificaciones
-                </a>
+            <!-- Bottom Section -->
+            <div style="padding: 1rem; border-top: 1px solid var(--border); background: rgba(0,0,0,0.02);">
+                <!-- Theme Toggle -->
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; margin-bottom: 1rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">MODO DARK</span>
+                    <label class="theme-switch" for="themeCheckbox">
+                        <input type="checkbox" id="themeCheckbox" />
+                        <div class="slider"></div>
+                    </label>
+                </div>
 
                 <a href="perfil.php"
-                    class="flex items-center gap-3 px-4 py-3 group hover:bg-slate-50 rounded-xl transition-all">
+                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; text-decoration: none; border-radius: 8px; transition: background 0.2s;"
+                    onmouseover="this.style.background='rgba(13, 242, 128, 0.05)'"
+                    onmouseout="this.style.background='transparent'">
                     <?php if (!empty($currentUser['avatar_url'])): ?>
                         <img src="<?php echo htmlspecialchars($currentUser['avatar_url']); ?>"
-                            class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                            style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                     <?php else: ?>
                         <div
-                            class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                            style="width: 32px; height: 32px; background: var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
                             <?php echo strtoupper(substr($currentUser['name'], 0, 1)); ?>
                         </div>
                     <?php endif; ?>
-                    <div class="flex-1 overflow-hidden">
+                    <div style="flex: 1; overflow: hidden;">
                         <p
-                            class="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
-                            <?php echo htmlspecialchars($currentUser['name']); ?>
-                        </p>
-                        <p class="text-xs text-slate-500">
-                            <?php echo $currentUser['role'] === 'coach' ? 'Entrenador' : 'Atleta'; ?>
-                        </p>
+                            style="font-size: 0.875rem; font-weight: 600; color: var(--text-main); margin: 0; line-height: 1.2;">
+                            <?php echo htmlspecialchars($currentUser['name']); ?></p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">
+                            <?php echo ucfirst($currentUser['role']); ?></p>
                     </div>
                 </a>
+
                 <a href="logout.php"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 font-medium hover:bg-red-50 transition-all">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                    Cerrar Sesión
+                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; color: #ef4444; text-decoration: none; font-size: 0.875rem; font-weight: 600; margin-top: 0.5rem; border-radius: 8px;"
+                    onmouseover="this.style.background='rgba(239, 68, 68, 0.05)'"
+                    onmouseout="this.style.background='transparent'">
+                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i> Salir
                 </a>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 ml-64 p-8">
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <h1 id="pageTitle" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">
+                        <?php
+                        $titles = [
+                            'dashboard' => 'Dashboard Overview',
+                            'atletas' => 'Gestión de Atletas',
+                            'generar_plan' => 'Planificador de Entrenamientos',
+                            'mis_planes' => 'Archivo de Planes',
+                            'entrenamientos' => 'Reportes de Actividad',
+                            'metricas' => 'Análisis de Rendimiento',
+                            'config_team' => 'Configuración del Equipo',
+                            'mi_plan' => 'Mi Programación Semanal',
+                            'mi_progreso' => 'Mi Análisis Personal',
+                            'perfil' => 'Ajustes de Perfil'
+                        ];
+                        echo $titles[$currentPage] ?? ucfirst($currentPage);
+                        ?>
+                    </h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a href="notificaciones.php"
+                        style="position: relative; color: var(--text-muted); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card);">
+                        <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+                    </a>
+                </div>
+            </header>
+
+            <script>
+                // Theme Toggle Script
+                const themeCheckbox = document.getElementById('themeCheckbox');
+                if (localStorage.getItem('theme') === 'dark') {
+                    themeCheckbox.checked = true;
+                }
+
+                themeCheckbox.addEventListener('change', (e) => {
+                    const theme = e.target.checked ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+            </script>

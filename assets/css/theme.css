@@ -10,7 +10,7 @@
     --text-muted: #64748b;
     --border: #e2e8f0;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    
+
     /* Surface Tokens */
     --card-radius: 8px;
     --font-family: 'Lexend', sans-serif;
@@ -46,6 +46,25 @@ body {
     padding: 0 1.5rem;
 }
 
+/* Layout utilities */
+.sidebar {
+    width: 280px;
+    background-color: var(--bg-card);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+.main-content {
+    margin-left: 280px;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
 /* UI Components based on Stitch Design */
 .btn {
     display: inline-flex;
@@ -62,7 +81,7 @@ body {
 
 .btn-primary {
     background-color: var(--primary);
-    color: #0f172a; /* Lexend Bold looks great in dark on bright emerald */
+    color: #0f172a;
 }
 
 .btn-primary:hover {
@@ -91,6 +110,81 @@ body {
 
 .card:hover {
     transform: translateY(-4px);
+}
+
+/* Nav Link Styles */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: var(--card-radius);
+    transition: all 0.2s ease;
+    margin: 0.25rem 1rem;
+}
+
+.nav-link:hover {
+    color: var(--text-main);
+    background-color: rgba(13, 242, 128, 0.05);
+}
+
+.nav-link.active {
+    color: #0f172a;
+    background-color: var(--primary);
+}
+
+.nav-link i {
+    width: 20px;
+    height: 20px;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-emerald {
+    background-color: rgba(13, 242, 128, 0.1);
+    color: var(--primary);
+}
+
+.badge-blue {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.badge-red {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Dashboard Cards */
+.stat-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
 }
 
 /* Theme Toggle styles */
@@ -134,10 +228,10 @@ body {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: var(--primary);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(26px);
 }

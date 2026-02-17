@@ -12,10 +12,8 @@ Auth::requireRole('athlete');
 $user = Auth::user();
 $db = Database::getInstance();
 
-// Get team info for branding
 $team = Team::findByCoach($user['coach_id'] ?? 0);
 
-// Handle form submissions (record results, upload evidence)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'complete_workout') {
         $workoutId = $_POST['workout_id'];
@@ -29,41 +27,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             'delivery_status' => 'received'
         ];
 
-        // Handle file upload
         if (isset($_FILES['evidence']) && $_FILES['evidence']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = 'uploads/evidence/';
             if (!is_dir($uploadDir))
                 mkdir($uploadDir, 0777, true);
             $ext = pathinfo($_FILES['evidence']['name'], PATHINFO_EXTENSION);
             $filename = 'evidence_' . $workoutId . '_' . time() . '.' . $ext;
-            $dest = $uploadDir . $filename;
-            if (move_uploaded_file($_FILES['evidence']['tmp_name'], $dest)) {
-                $updateData['evidence_path'] = $dest;
+            if (move_uploaded_file($_FILES['evidence']['tmp_name'], $uploadDir . $filename)) {
+                $updateData['evidence_path'] = $uploadDir . $filename;
             }
         }
 
         Workout::update($workoutId, $updateData);
 
-        // Notify coach about completed workout
         if ($user['coach_id']) {
             $workout = Workout::getById($workoutId);
-            $dateStr = (new DateTime($workout['date']))->format('d/m/Y');
-            $hasFeedback = !empty($_POST['feedback']);
-
-            $message = "✅ {$user['name']} completó su entrenamiento del {$dateStr}";
-            if ($hasFeedback) {
-                $message .= " y dejó feedback para revisar";
-            }
-
+            $message = "✅ {$user['name']} completó entrenamiento: " . ($workout['type'] ?? 'Actividad');
             Notification::create($user['coach_id'], $message, 'info');
         }
 
-        header('Location: mi_plan.php?success=1&month=' . ($_GET['month'] ?? date('Y-m')));
+        header('Location: mi_plan.php?success=1');
         exit;
     }
 }
 
-// Calculate current month
 $monthParam = $_GET['month'] ?? date('Y-m');
 $currentMonth = new DateTime($monthParam . '-01');
 $monthStart = clone $currentMonth;
@@ -72,386 +59,173 @@ $prevMonth = (clone $currentMonth)->modify('-1 month')->format('Y-m');
 $nextMonth = (clone $currentMonth)->modify('+1 month')->format('Y-m');
 $today = new DateTime();
 
-// Get workouts for the entire month
-$workouts = Workout::getByAthlete(
-    $user['id'],
-    $monthStart->format('Y-m-d 00:00:00'),
-    $monthEnd->format('Y-m-d 23:59:59')
-);
-
-// Index workouts by date
+$workouts = Workout::getByAthlete($user['id'], $monthStart->format('Y-m-d 00:00:00'), $monthEnd->format('Y-m-d 23:59:59'));
 $workoutsByDate = [];
 foreach ($workouts as $w) {
-    $dateKey = (new DateTime($w['date']))->format('Y-m-d');
-    $workoutsByDate[$dateKey] = $w;
+    $workoutsByDate[(new DateTime($w['date']))->format('Y-m-d')] = $w;
 }
 
-// Calendar calculations
-$firstDayOfMonth = (int) $monthStart->format('N'); // 1=Monday
+$firstDayOfMonth = (int) $monthStart->format('N');
 $daysInMonth = (int) $monthEnd->format('d');
 
 include 'views/layout/header.php';
 ?>
 
-<!-- Team Branding -->
-<?php if ($team && $team['logo_url']): ?>
-    <div class="flex items-center gap-4 mb-6">
-        <img src="<?php echo htmlspecialchars($team['logo_url']); ?>"
-            class="w-12 h-12 rounded-xl object-cover border border-slate-200">
-        <div>
-            <h2 class="font-bold text-slate-900"><?php echo htmlspecialchars($team['name'] ?? 'Mi Equipo'); ?></h2>
-            <p class="text-sm text-slate-500">Programación de entrenamiento</p>
-        </div>
-    </div>
-<?php endif; ?>
-
-<!-- Page Header with Month Navigation -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<!-- Header with Month Nav -->
+<div
+    style="background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">MI PROGRAMACIÓN</h1>
-        <p class="text-slate-500 mt-1">Tu plan de entrenamiento mensual</p>
-    </div>
-    <div class="flex items-center gap-3">
-        <a href="mi_plan.php?month=<?php echo $prevMonth; ?>"
-            class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition-all">
-            <i data-lucide="chevron-left" class="w-5 h-5 inline"></i>
-        </a>
-        <div
-            class="px-6 py-2 bg-white rounded-xl border border-slate-200 font-bold text-slate-900 text-center min-w-[200px]">
+        <h2 style="font-weight: 800; font-size: 1.5rem; color: var(--text-main); margin: 0;">Mi Programación</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">
             <?php
             $months_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            $monthIdx = (int) $currentMonth->format('n') - 1;
-            echo $months_es[$monthIdx] . ' ' . $currentMonth->format('Y');
+            echo $months_es[(int) $currentMonth->format('n') - 1] . ' ' . $currentMonth->format('Y');
             ?>
-        </div>
-        <a href="mi_plan.php?month=<?php echo $nextMonth; ?>"
-            class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition-all">
-            <i data-lucide="chevron-right" class="w-5 h-5 inline"></i>
-        </a>
-        <a href="mi_plan.php"
-            class="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all text-sm">
-            Hoy
-        </a>
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="mi_plan.php?month=<?php echo $prevMonth; ?>" class="btn btn-secondary" style="padding: 0.5rem;"><i
+                data-lucide="chevron-left"></i></a>
+        <a href="mi_plan.php" class="btn btn-secondary" style="font-size: 0.8rem;">HOY</a>
+        <a href="mi_plan.php?month=<?php echo $nextMonth; ?>" class="btn btn-secondary" style="padding: 0.5rem;"><i
+                data-lucide="chevron-right"></i></a>
     </div>
 </div>
 
 <?php if (isset($_GET['success'])): ?>
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Entrenamiento registrado exitosamente
+    <div class="card" style="border-color: var(--primary); background: rgba(13, 242, 128, 0.05); margin-bottom: 2rem;">
+        <p style="margin: 0; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="check-circle" style="color: var(--primary);"></i> Entrenamiento registrado. ¡Buen trabajo!
+        </p>
     </div>
 <?php endif; ?>
 
-<!-- Monthly Summary -->
-<?php
-$totalMonth = count($workouts);
-$completedMonth = 0;
-$pendingMonth = 0;
-$restDays = 0;
-foreach ($workouts as $w) {
-    if ($w['type'] === 'Descanso')
-        $restDays++;
-    elseif ($w['status'] === 'completed')
-        $completedMonth++;
-    elseif ($w['status'] === 'pending')
-        $pendingMonth++;
-}
-$activeWorkouts = $totalMonth - $restDays;
-$complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts) * 100) : 0;
-?>
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="calendar" class="w-5 h-5 text-blue-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $totalMonth; ?></p>
-                <p class="text-xs text-slate-500">Sesiones del Mes</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $completedMonth; ?></p>
-                <p class="text-xs text-slate-500">Completados</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-amber-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $pendingMonth; ?></p>
-                <p class="text-xs text-slate-500">Pendientes</p>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center">
-                <i data-lucide="target" class="w-5 h-5 text-purple-600"></i>
-            </div>
-            <div>
-                <p class="text-2xl font-bold text-slate-900"><?php echo $complianceRate; ?>%</p>
-                <p class="text-xs text-slate-500">Cumplimiento</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Monthly Calendar -->
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <!-- Day headers -->
-    <div class="grid grid-cols-7 bg-slate-50 border-b border-slate-200">
-        <?php
-        $dayHeaders = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-        foreach ($dayHeaders as $dh):
-            ?>
-            <div class="px-3 py-3 text-center text-sm font-bold text-slate-600"><?php echo $dh; ?></div>
+<!-- Calendar Grid -->
+<div
+    style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden;">
+    <!-- Headers -->
+    <div
+        style="display: grid; grid-template-columns: repeat(7, 1fr); background: var(--bg-main); border-bottom: 1px solid var(--border);">
+        <?php foreach (['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'] as $head): ?>
+            <div
+                style="padding: 0.75rem; text-align: center; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">
+                <?php echo $head; ?></div>
         <?php endforeach; ?>
     </div>
 
-    <!-- Calendar grid -->
-    <div class="grid grid-cols-7">
+    <!-- Days -->
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr);">
         <?php
-        // Empty cells before first day
-        for ($i = 1; $i < $firstDayOfMonth; $i++):
-            ?>
-            <div class="min-h-[120px] border-b border-r border-slate-100 bg-slate-50/50"></div>
-        <?php endfor; ?>
+        for ($i = 1; $i < $firstDayOfMonth; $i++)
+            echo '<div style="min-height: 140px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); background: var(--bg-main); opacity: 0.3;"></div>';
 
-        <?php for ($day = 1; $day <= $daysInMonth; $day++):
-            $dateKey = $currentMonth->format('Y-m') . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-            $workout = $workoutsByDate[$dateKey] ?? null;
-            $isToday = $dateKey === $today->format('Y-m-d');
-            $isRest = $workout && $workout['type'] === 'Descanso';
-            $isCompleted = $workout && $workout['status'] === 'completed';
-            $isPending = $workout && $workout['status'] === 'pending';
-
-            $typeColors = [
-                'Series' => 'bg-purple-100 text-purple-700 border-purple-200',
-                'Intervalos' => 'bg-orange-100 text-orange-700 border-orange-200',
-                'Fondo' => 'bg-blue-100 text-blue-700 border-blue-200',
-                'Tempo' => 'bg-red-100 text-red-700 border-red-200',
-                'Recuperación' => 'bg-green-100 text-green-700 border-green-200',
-                'Descanso' => 'bg-slate-100 text-slate-500 border-slate-200'
-            ];
-            $typeColor = $workout ? ($typeColors[$workout['type']] ?? 'bg-slate-100 text-slate-600 border-slate-200') : '';
+        for ($day = 1; $day <= $daysInMonth; $day++):
+            $dateStr = $currentMonth->format('Y-m') . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
+            $workout = $workoutsByDate[$dateStr] ?? null;
+            $isToday = $dateStr === $today->format('Y-m-d');
             ?>
             <div
-                class="min-h-[120px] border-b border-r border-slate-100 p-2 <?php echo $isToday ? 'bg-blue-50/50 ring-2 ring-inset ring-blue-300' : ''; ?> hover:bg-slate-50 transition-colors">
-                <!-- Day number -->
-                <div class="flex justify-between items-center mb-1">
+                style="min-height: 140px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0.75rem; <?php echo $isToday ? 'background: rgba(13, 242, 128, 0.05); position: relative;' : ''; ?>">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <span
-                        class="text-sm font-bold <?php echo $isToday ? 'text-blue-600 bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center' : 'text-slate-600'; ?>">
+                        style="font-size: 0.8rem; font-weight: 800; <?php echo $isToday ? 'color: var(--primary);' : 'color: var(--text-muted);'; ?>">
                         <?php echo $day; ?>
                     </span>
-                    <?php if ($isCompleted): ?>
-                        <span class="text-green-500 text-xs">✅</span>
-                    <?php elseif ($isRest): ?>
-                        <span class="text-xs">😴</span>
+                    <?php if ($workout && $workout['status'] === 'completed'): ?>
+                        <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: var(--primary);"></i>
                     <?php endif; ?>
                 </div>
 
                 <?php if ($workout): ?>
-                    <?php if ($isRest): ?>
-                        <!-- Rest Day -->
-                        <div class="px-2 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-center">
-                            <p class="text-xs font-semibold text-slate-500">Descanso</p>
+                    <?php if ($workout['type'] === 'Descanso'): ?>
+                        <div style="text-align: center; margin-top: 1rem; opacity: 0.5;">
+                            <i data-lucide="bed" style="width: 24px; height: 24px; color: var(--text-muted);"></i>
                         </div>
                     <?php else: ?>
-                        <!-- Workout Cell -->
-                        <div onclick='openWorkoutModal(<?php echo json_encode($workout); ?>, "<?php echo $dateKey; ?>")'
-                            class="px-2 py-1.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>">
-                            <p class="text-xs font-bold truncate"><?php echo htmlspecialchars($workout['type']); ?></p>
-                            <p class="text-[10px] truncate opacity-80">
-                                <?php echo htmlspecialchars($workout['description'] ?? ''); ?>
-                            </p>
-                            <?php if ($isCompleted && $workout['actual_distance']): ?>
-                                <p class="text-[10px] font-semibold mt-0.5"><?php echo $workout['actual_distance']; ?> km</p>
+                        <div onclick='openWorkoutModal(<?php echo json_encode($workout); ?>)'
+                            style="background: var(--bg-main); border: 1px solid var(--border); padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <p
+                                style="font-size: 0.7rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; text-transform: uppercase;">
+                                <?php echo htmlspecialchars($workout['type']); ?></p>
+                            <?php if ($workout['status'] === 'completed' && $workout['actual_distance']): ?>
+                                <p style="font-size: 0.75rem; font-weight: 800; color: var(--primary);">
+                                    <?php echo $workout['actual_distance']; ?> km</p>
+                            <?php else: ?>
+                                <p style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.1;">
+                                    <?php echo mb_strimwidth($workout['description'], 0, 30, '...'); ?></p>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php endfor; ?>
-
-        <?php
-        // Fill remaining cells
-        $totalCells = ($firstDayOfMonth - 1) + $daysInMonth;
-        $remaining = 7 - ($totalCells % 7);
-        if ($remaining < 7):
-            for ($i = 0; $i < $remaining; $i++):
-                ?>
-                <div class="min-h-[120px] border-b border-r border-slate-100 bg-slate-50/50"></div>
-                <?php
-            endfor;
-        endif;
-        ?>
     </div>
 </div>
 
-<!-- Legend -->
-<div class="flex flex-wrap gap-4 mt-4 text-xs text-slate-500">
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-purple-200 inline-block"></span> Series</span>
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-orange-200 inline-block"></span>
-        Intervalos</span>
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-200 inline-block"></span> Fondo</span>
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-200 inline-block"></span> Tempo</span>
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-green-200 inline-block"></span>
-        Recuperación</span>
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-200 inline-block"></span>
-        Descanso</span>
-</div>
-
-<!-- Workout Detail Modal (for non-rest days only) -->
-<div id="workoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-            <div>
-                <h3 class="text-xl font-bold text-slate-900" id="modalTitle">Detalle del Entrenamiento</h3>
-                <p class="text-slate-500 text-sm mt-1" id="modalDate"></p>
-            </div>
-            <button onclick="closeWorkoutModal()" class="text-slate-400 hover:text-slate-600">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
+<!-- Modal -->
+<div id="workoutModal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem;">
+        <div id="modalHeader"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 id="modalTitle" style="font-weight: 800; font-size: 1.25rem;">Detalle de Sesión</h3>
+            <button onclick="closeWorkoutModal()"
+                style="background: none; border: none; color: var(--text-muted); cursor: pointer;"><i
+                    data-lucide="x"></i></button>
         </div>
-        <div class="p-6 space-y-5" id="modalContent">
-            <!-- Content filled by JS -->
+        <div id="modalBody" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Content here -->
         </div>
     </div>
 </div>
 
 <script>
-    function openWorkoutModal(workout, dateKey) {
+    function openWorkoutModal(workout) {
         const modal = document.getElementById('workoutModal');
-        const content = document.getElementById('modalContent');
-        const dateObj = new Date(dateKey + 'T12:00:00');
-        document.getElementById('modalDate').textContent = dateObj.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+        const body = document.getElementById('modalBody');
 
-        let html = '';
-
-        // Workout info
-        html += `
-            <div class="flex items-center gap-3">
-                <span class="px-3 py-1 rounded-lg text-sm font-bold bg-blue-100 text-blue-700">${workout.type}</span>
-                <span class="text-slate-600">${workout.description || ''}</span>
+        let html = `
+            <div style="background: var(--bg-main); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary);">
+                <p style="font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; text-transform: uppercase;">${workout.type}</p>
+                <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-main); white-space: pre-wrap;">${workout.structure || 'Sin instrucciones adicionales.'}</div>
             </div>
         `;
 
-        // Structure/instructions from coach
-        if (workout.structure) {
-            const structure = typeof workout.structure === 'string' ? workout.structure : JSON.stringify(workout.structure, null, 2);
-            html += `
-                <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <h4 class="text-xs uppercase font-bold text-blue-600 mb-2 flex items-center gap-2">
-                        <i data-lucide="clipboard" class="w-4 h-4"></i> Instrucciones del Entrenador
-                    </h4>
-                    <p class="text-slate-700 whitespace-pre-wrap text-sm">${structure}</p>
-                </div>
-            `;
-        }
-
         if (workout.status === 'completed') {
-            // Show results
             html += `
-                <div class="bg-green-50 rounded-xl p-4 border border-green-200">
-                    <h4 class="text-xs uppercase font-bold text-green-600 mb-3">Tus Resultados</h4>
-                    <div class="grid grid-cols-3 gap-4 text-center">
-                        <div>
-                            <p class="text-xs text-slate-500">Distancia</p>
-                            <p class="text-lg font-bold text-slate-900">${workout.actual_distance ? workout.actual_distance + ' km' : '-'}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500">Tiempo</p>
-                            <p class="text-lg font-bold text-slate-900">${workout.actual_time ? workout.actual_time + ' min' : '-'}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500">RPE</p>
-                            <p class="text-lg font-bold text-slate-900">${workout.rpe ? workout.rpe + '/10' : '-'}</p>
-                        </div>
-                    </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <div><p style="font-size:0.7rem; color: var(--text-muted);">KM</p><p style="font-weight:800; font-size: 1.1rem;">${workout.actual_distance || '--'}</p></div>
+                    <div><p style="font-size:0.7rem; color: var(--text-muted);">MIN</p><p style="font-weight:800; font-size: 1.1rem;">${workout.actual_time || '--'}</p></div>
+                    <div><p style="font-size:0.7rem; color: var(--text-muted);">RPE</p><p style="font-weight:800; font-size: 1.1rem;">${workout.rpe || '--'}/10</p></div>
                 </div>
             `;
-
-            if (workout.feedback) {
-                html += `
-                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                        <h4 class="text-xs uppercase font-bold text-slate-500 mb-2">Tu Feedback</h4>
-                        <p class="text-slate-700">${workout.feedback}</p>
-                    </div>
-                `;
-            }
-
-            if (workout.coach_feedback) {
-                html += `
-                    <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                        <h4 class="text-xs uppercase font-bold text-purple-600 mb-2 flex items-center gap-2">
-                            <i data-lucide="check-check" class="w-4 h-4"></i> Respuesta del Entrenador
-                        </h4>
-                        <p class="text-slate-700">${workout.coach_feedback}</p>
-                    </div>
-                `;
-            }
         } else {
-            // Show complete form
             html += `
-                <form method="POST" enctype="multipart/form-data" class="space-y-4 border-t border-slate-100 pt-4">
+                <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
                     <input type="hidden" name="action" value="complete_workout">
                     <input type="hidden" name="workout_id" value="${workout.id}">
-                    <h4 class="text-sm font-bold text-slate-700">Registrar Resultados</h4>
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Distancia (km)</label>
-                            <input type="number" name="actual_distance" step="0.01" placeholder="0.00"
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">Tiempo (min)</label>
-                            <input type="number" name="actual_time" step="0.1" placeholder="0"
-                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 mb-1">RPE (1-10)</label>
-                            <select name="rpe" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                                <option value="">-</option>
-                                ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}">${n}</option>`).join('')}
-                            </select>
-                        </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                        <input type="number" name="actual_distance" step="0.01" placeholder="KM" required style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.8rem;">
+                        <input type="number" name="actual_time" placeholder="MIN" required style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.8rem;">
+                        <select name="rpe" required style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.8rem;">
+                            <option value="">RPE</option>
+                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}">${n}</option>`).join('')}
+                        </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Feedback (opcional)</label>
-                        <textarea name="feedback" rows="2" placeholder="¿Cómo te sentiste?"
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Evidencia (foto/captura)</label>
-                        <input type="file" name="evidence" accept="image/*"
-                            class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 file:font-semibold hover:file:bg-blue-200">
-                    </div>
-                    <button type="submit"
-                        class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all">
-                        ✅ Completar Entrenamiento
-                    </button>
+                    <textarea name="feedback" rows="2" placeholder="Feedback para el entrenador..." style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.85rem;"></textarea>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.8rem;">REPORTAR ENTRENAMIENTO</button>
                 </form>
             `;
         }
 
-        content.innerHTML = html;
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        body.innerHTML = html;
+        modal.style.display = 'flex';
         lucide.createIcons();
     }
 
     function closeWorkoutModal() {
-        document.getElementById('workoutModal').classList.add('hidden');
-        document.getElementById('workoutModal').classList.remove('flex');
+        document.getElementById('workoutModal').style.display = 'none';
     }
 </script>
 
