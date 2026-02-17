@@ -297,10 +297,9 @@ new Chart(document.getElementById('distanceChart'), {
         datasets: [{
             label: 'Kilómetros',
             data: distances,
-            backgroundColor: 'rgba(34, 197, 94, 0.7)',
-            borderColor: 'rgb(34, 197, 94)',
-            borderWidth: 1,
-            borderRadius: 6
+            backgroundColor: '#0df280',
+            borderRadius: 4,
+            hoverBackgroundColor: '#0bc568'
         }]
     },
     options: {
@@ -308,8 +307,8 @@ new Chart(document.getElementById('distanceChart'), {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-            x: { grid: { display: false } }
+            y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' }, font: { family: 'Lexend' } },
+            x: { border: { display: false }, grid: { display: false }, font: { family: 'Lexend' } }
         }
     }
 });
@@ -322,12 +321,13 @@ new Chart(document.getElementById('paceChart'), {
         datasets: [{
             label: 'min/km',
             data: paces,
-            borderColor: 'rgb(147, 51, 234)',
-            backgroundColor: 'rgba(147, 51, 234, 0.1)',
+            borderColor: '#0df280',
+            backgroundColor: 'rgba(13, 242, 128, 0.1)',
             fill: true,
             tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: 'rgb(147, 51, 234)'
+            pointRadius: 3,
+            pointBackgroundColor: '#0df280',
+            borderWidth: 3
         }]
     },
     options: {
@@ -335,8 +335,8 @@ new Chart(document.getElementById('paceChart'), {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-            y: { reverse: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-            x: { grid: { display: false } }
+            y: { reverse: true, border: { display: false }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { border: { display: false }, grid: { display: false } }
         }
     }
 });

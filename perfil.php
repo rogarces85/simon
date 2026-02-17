@@ -72,92 +72,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include 'views/layout/header.php';
 ?>
 
-<div class="max-w-2xl mx-auto">
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Mi Perfil</h1>
-        <p class="text-slate-500 mt-1">Gestiona tu información personal</p>
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 0;">MI PERFIL</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">Gestiona tu información personal y seguridad</p>
     </div>
 
     <?php if ($success): ?>
-        <div class="bg-green-50 text-green-600 p-4 rounded-xl mb-6 flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <?php echo $success; ?>
+        <div class="card"
+            style="border-color: var(--primary); background: rgba(13, 242, 128, 0.05); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="check-circle" style="color: var(--primary);"></i>
+            <span><?php echo $success; ?></span>
         </div>
     <?php endif; ?>
 
     <?php if ($error): ?>
-        <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-2">
-            <i data-lucide="alert-circle" class="w-5 h-5"></i>
-            <?php echo $error; ?>
+        <div class="card"
+            style="border-color: #ef4444; background: rgba(239, 68, 68, 0.05); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="alert-circle" style="color: #ef4444;"></i>
+            <span><?php echo $error; ?></span>
         </div>
     <?php endif; ?>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <!-- Cover/Header -->
-        <div class="h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <!-- Perfil Header / Gradient -->
+        <div
+            style="height: 120px; background: linear-gradient(135deg, var(--primary) 0%, #0bc568 100%); position: relative;">
+        </div>
 
-        <div class="px-8 pb-8">
-            <div class="relative flex justify-between items-end -mt-12 mb-6">
-                <div class="relative">
+        <div style="padding: 0 2rem 2rem 2rem;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: -3rem; margin-bottom: 2rem;">
+                <div style="position: relative;">
                     <?php if (!empty($user['avatar_url'])): ?>
                         <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>"
-                            class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover">
+                            style="width: 100px; height: 100px; rounded-circle: 100%; border: 4px solid var(--bg-card); background: var(--bg-card); object-cover: cover; border-radius: 50%; box-shadow: var(--shadow);">
                     <?php else: ?>
                         <div
-                            class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-slate-200 flex items-center justify-center text-slate-400">
-                            <i data-lucide="user" class="w-10 h-10"></i>
+                            style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-card); background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: var(--shadow);">
+                            <i data-lucide="user" style="width: 40px; height: 40px;"></i>
                         </div>
                     <?php endif; ?>
                     <label
-                        class="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-sm border border-slate-200 cursor-pointer hover:bg-slate-50 text-slate-600">
-                        <i data-lucide="camera" class="w-4 h-4"></i>
-                        <input type="file" form="profileForm" name="avatar" accept="image/*" class="hidden"
+                        style="position: absolute; bottom: 0; right: 0; background: var(--bg-card); padding: 0.5rem; border-radius: 50%; box-shadow: var(--shadow); cursor: pointer; border: 1px solid var(--border);">
+                        <i data-lucide="camera" style="width: 16px; height: 16px; color: var(--text-main);"></i>
+                        <input type="file" form="profileForm" name="avatar" accept="image/*" style="display: none;"
                             onchange="document.getElementById('profileForm').submit()">
                     </label>
                 </div>
-                <div class="mb-2">
-                    <span
-                        class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
-                        <?php echo htmlspecialchars($user['role']); ?>
+                <div style="margin-bottom: 0.5rem;">
+                    <span class="badge badge-emerald" style="font-size: 0.75rem;">
+                        <?php echo htmlspecialchars(strtoupper($user['role'])); ?>
                     </span>
                 </div>
             </div>
 
-            <form id="profileForm" method="POST" enctype="multipart/form-data" class="space-y-6">
-                <div class="grid grid-cols-1 gap-6">
+            <form id="profileForm" method="POST" enctype="multipart/form-data"
+                style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Nombre
+                            Completo</label>
                         <input type="text" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required
-                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                     </div>
-
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico</label>
+                        <label
+                            style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Correo
+                            Electrónico</label>
                         <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>"
-                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                     </div>
+                </div>
 
-                    <div class="border-t border-slate-100 pt-6">
-                        <h4 class="text-sm font-bold text-slate-900 mb-4">Cambiar Contraseña</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-2">Nueva Contraseña</label>
-                                <input type="password" name="password" placeholder="Dejar en blanco para mantener"
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-2">Confirmar
-                                    Contraseña</label>
-                                <input type="password" name="confirm_password" placeholder="Confirmar nueva contraseña"
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
+                <div style="border-top: 1px solid var(--border); pt: 1.5rem; margin-top: 0.5rem;">
+                    <h4
+                        style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem; margin-top: 1.5rem; text-transform: uppercase;">
+                        Seguridad</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Nueva
+                                Contraseña</label>
+                            <input type="password" name="password" placeholder="Dejar en blanco para mantener"
+                                style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Confirmar
+                                Contraseña</label>
+                            <input type="password" name="confirm_password" placeholder="Confirmar nueva contraseña"
+                                style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-4">
-                    <button type="submit"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-shadow shadow-lg shadow-blue-100">
+                <div style="display: flex; justify-content: flex-end; pt: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2rem;">
                         Guardar Cambios
                     </button>
                 </div>

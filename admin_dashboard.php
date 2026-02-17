@@ -12,77 +12,71 @@ $coaches = User::getByRole('coach');
 include 'views/layout/header.php';
 ?>
 
-<div class="mb-8 flex justify-between items-center">
+<div
+    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">ADMINISTRACIÓN</h1>
-        <p class="text-slate-500 mt-1">Gestión global del sistema</p>
+        <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 0;">ADMINISTRACIÓN</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">Gestión global de entrenadores y equipos</p>
     </div>
-    <a href="crear_entrenador.php"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors flex items-center gap-2">
-        <i data-lucide="user-plus" class="w-5 h-5"></i>
+    <a href="crear_entrenador.php" class="btn btn-primary" style="padding: 0.75rem 1.5rem; gap: 0.75rem;">
+        <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
         Nuevo Entrenador
     </a>
 </div>
 
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="p-6 border-b border-slate-100">
-        <h2 class="text-lg font-bold text-slate-900">Entrenadores Registrados</h2>
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border);">
+        <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0;">Entrenadores Registrados</h2>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-slate-50 border-b border-slate-100">
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead
+                style="background: var(--bg-main); color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">
                 <tr>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre
-                    </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email
-                    </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Team
-                    </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado
-                    </th>
-                    <th class="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Acciones</th>
+                    <th style="padding: 1rem 1.5rem;">NOMBRE</th>
+                    <th style="padding: 1rem 1.5rem;">USUARIO / EMAIL</th>
+                    <th style="padding: 1rem 1.5rem;">EQUIPO</th>
+                    <th style="padding: 1rem 1.5rem; text-align: center;">ESTADO</th>
+                    <th style="padding: 1rem 1.5rem; text-align: right;">ACCIONES</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody style="color: var(--text-main); font-size: 0.9rem;">
                 <?php foreach ($coaches as $coach):
                     $team = Team::findByCoach($coach['id']);
                     ?>
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold">
+                                    style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #0f172a; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem;">
                                     <?php echo strtoupper(substr($coach['name'], 0, 1)); ?>
                                 </div>
-                                <span class="font-medium text-slate-900">
-                                    <?php echo htmlspecialchars($coach['name']); ?>
-                                </span>
+                                <span style="font-weight: 700;"><?php echo htmlspecialchars($coach['name']); ?></span>
                             </div>
                         </td>
-                        <td class="py-4 px-6 text-slate-600">
+                        <td style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-family: monospace;">
                             <?php echo htmlspecialchars($coach['username']); ?>
                         </td>
-                        <td class="py-4 px-6">
+                        <td style="padding: 1.25rem 1.5rem;">
                             <?php if ($team): ?>
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                <span class="badge badge-emerald" style="font-size: 0.75rem;">
                                     <?php echo htmlspecialchars($team['name']); ?>
                                 </span>
                             <?php else: ?>
-                                <span class="text-slate-400 text-sm italic">Sin Team</span>
+                                <span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">Sin Equipo</span>
                             <?php endif; ?>
                         </td>
-                        <td class="py-4 px-6">
+                        <td style="padding: 1.25rem 1.5rem; text-align: center;">
                             <span
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 100px; background: rgba(13, 242, 128, 0.1); color: #065f46; font-size: 0.75rem; font-weight: 700;">
+                                <span
+                                    style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary);"></span>
                                 Activo
                             </span>
                         </td>
-                        <td class="py-4 px-6 text-right">
-                            <button class="text-slate-400 hover:text-blue-600 transition-colors p-2">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <button class="btn btn-secondary" style="padding: 0.4rem; border-radius: 8px;">
+                                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
                             </button>
                         </td>
                     </tr>

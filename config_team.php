@@ -64,80 +64,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include 'views/layout/header.php';
 ?>
 
-<div class="max-w-2xl mx-auto">
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Configuración del Team</h1>
-        <p class="text-slate-500 mt-1">Personaliza la identidad visual de tu equipo.</p>
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 0;">CONFIGURACIÓN DEL TEAM</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">Personaliza la identidad visual de tu equipo</p>
     </div>
 
     <?php if ($success): ?>
-        <div class="bg-green-50 text-green-600 p-4 rounded-xl mb-6 flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <?php echo $success; ?>
+        <div class="card"
+            style="border-color: var(--primary); background: rgba(13, 242, 128, 0.05); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="check-circle" style="color: var(--primary);"></i>
+            <span><?php echo $success; ?></span>
         </div>
     <?php endif; ?>
 
-    <?php if ($error): ?>
-        <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-3">
-            <i data-lucide="alert-circle" class="w-5 h-5"></i>
-            <?php echo $error; ?>
-        </div>
-    <?php endif; ?>
+    <div class="card">
+        <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 2rem;">
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <form method="POST" enctype="multipart/form-data" class="space-y-8">
-
-            <!-- Logo Upload -->
-            <div class="flex items-center gap-6">
-                <div class="shrink-0">
+            <!-- Logo Upload Section -->
+            <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                <div style="position: relative;">
                     <?php if (isset($team['logo_url']) && $team['logo_url']): ?>
-                        <img class="h-24 w-24 object-cover rounded-full border-2 border-slate-100"
-                            src="<?php echo htmlspecialchars($team['logo_url']); ?>" alt="Team Logo" />
+                        <img src="<?php echo htmlspecialchars($team['logo_url']); ?>"
+                            style="width: 100px; height: 100px; border-radius: 16px; border: 2px solid var(--border); object-fit: cover;">
                     <?php else: ?>
-                        <div class="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                            <i data-lucide="image" class="w-10 h-10"></i>
+                        <div
+                            style="width: 100px; height: 100px; border-radius: 16px; background: var(--bg-main); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                            <i data-lucide="image" style="width: 32px; height: 32px;"></i>
                         </div>
                     <?php endif; ?>
+                    <label
+                        style="position: absolute; bottom: -10px; right: -10px; background: var(--primary); color: #0f172a; padding: 0.4rem; border-radius: 50%; cursor: pointer; box-shadow: var(--shadow);">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                        <input type="file" name="logo" accept="image/*" style="display: none;">
+                    </label>
                 </div>
-                <label class="block">
-                    <span class="sr-only">Elegir logo</span>
-                    <input type="file" name="logo" accept="image/*" class="block w-full text-sm text-slate-500
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-full file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-blue-50 file:text-blue-700
-                        hover:file:bg-blue-100
-                    " />
-                    <p class="mt-2 text-xs text-slate-500">JPG, PNG o WEBP. Máx 5MB.</p>
-                </label>
-            </div>
-
-            <hr class="border-slate-100 my-6">
-
-            <!-- Team Name -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre del Team</label>
-                <input type="text" name="name" value="<?php echo htmlspecialchars($team['name'] ?? ''); ?>" required
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all font-inter"
-                    placeholder="Ej. RunFast Team">
-            </div>
-
-            <!-- Primary Color -->
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Color del Team</label>
-                <div class="flex items-center gap-4">
-                    <input type="color" name="primary_color"
-                        value="<?php echo htmlspecialchars($team['primary_color'] ?? '#3b82f6'); ?>"
-                        class="h-12 w-24 rounded cursor-pointer border-0 p-0">
-                    <span class="text-slate-500 text-sm">Color principal para botones y encabezados de tus
-                        atletas.</span>
+                <div style="flex: 1;">
+                    <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem;">Logo del Equipo</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted);">Formatos aceptados: JPG, PNG, WEBP. Máximo
+                        5MB.</p>
                 </div>
             </div>
 
-            <div class="pt-4">
-                <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2">
-                    <i data-lucide="save" class="w-5 h-5"></i>
+            <hr style="border: none; border-top: 1px solid var(--border);">
+
+            <!-- Form Content -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div>
+                    <label
+                        style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Nombre
+                        del Team</label>
+                    <input type="text" name="name" value="<?php echo htmlspecialchars($team['name'] ?? ''); ?>" required
+                        style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;"
+                        placeholder="Ej. RunFast Team">
+                </div>
+
+                <div>
+                    <label
+                        style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Color
+                        Identificativo</label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="color" name="primary_color"
+                            value="<?php echo htmlspecialchars($team['primary_color'] ?? '#0df280'); ?>"
+                            style="width: 60px; height: 40px; border: none; border-radius: 6px; cursor: pointer; padding: 0; background: none;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Este color se usará para acentos
+                            visuales en la app.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; gap: 0.75rem;">
+                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
                     Guardar Configuración
                 </button>
             </div>

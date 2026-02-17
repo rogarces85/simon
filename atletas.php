@@ -64,246 +64,176 @@ include 'views/layout/header.php';
 ?>
 
 <!-- Page Header -->
-<div class="flex justify-between items-center mb-8">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
     <div>
-        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">MIS ATLETAS</h1>
-        <p class="text-slate-500 mt-1">Gestiona y monitorea a tu equipo</p>
+        <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 0;">GESTIÓN DE EQUIPO</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">Administra tus atletas y monitorea su rendimiento</p>
     </div>
-    <button onclick="openCreateModal()"
-        class="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
-        <i data-lucide="plus" class="w-5 h-5"></i>
+    <button onclick="openCreateModal()" class="btn btn-primary" style="gap: 0.5rem; padding: 0.75rem 1.5rem;">
+        <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
         Nuevo Atleta
     </button>
 </div>
 
 <?php if (isset($_GET['success'])): ?>
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta creado exitosamente
+    <div class="card"
+        style="border-color: var(--primary); background: rgba(13, 242, 128, 0.05); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+        <i data-lucide="check-circle" style="color: var(--primary);"></i>
+        <span>Atleta registrado con éxito.</span>
     </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['updated'])): ?>
-    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta actualizado exitosamente
+    <div class="card"
+        style="border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+        <i data-lucide="info" style="color: #3b82f6;"></i>
+        <span>Información actualizada correctamente.</span>
     </div>
 <?php endif; ?>
 
-<?php if (isset($_GET['deleted'])): ?>
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta eliminado correctamente
-    </div>
-<?php endif; ?>
-
-<!-- Athletes Table -->
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-900">Listado de Atletas</h2>
-        <div class="relative">
-            <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="searchAtleta" onkeyup="filterAthletes()" placeholder="Buscar atleta..."
-                class="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-64">
+<!-- Athletes Table Card -->
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div
+        style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: 1.125rem; font-weight: 700; margin: 0;">Listado de Atletas</h2>
+        <div style="position: relative; width: 280px;">
+            <i data-lucide="search"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+            <input type="text" id="searchAtleta" onkeyup="filterAthletes()" placeholder="Buscar por nombre o email..."
+                style="width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 0.875rem; outline: none;">
         </div>
     </div>
 
-    <table class="w-full" id="athleteTable">
-        <thead class="bg-slate-50">
-            <tr>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nombre</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Email</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nivel</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Ritmo Objetivo</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acciones</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-            <?php if (empty($athletes)): ?>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;" id="athleteTable">
+            <thead
+                style="background: var(--bg-main); color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
                 <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                        No hay atletas registrados. <button onclick="openCreateModal()"
-                            class="text-blue-600 font-semibold">Crea
-                            el primero</button>
-                    </td>
+                    <th style="padding: 1rem 1.5rem;">ATLETA</th>
+                    <th style="padding: 1rem 1.5rem;">ESTADO / NIVEL</th>
+                    <th style="padding: 1rem 1.5rem;">RITMO OBJETIVO</th>
+                    <th style="padding: 1rem 1.5rem; text-align: right;">ACCIONES</th>
                 </tr>
-            <?php else: ?>
-                <?php foreach ($athletes as $athlete): ?>
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-900">
-                            <?php echo htmlspecialchars($athlete['name']); ?>
-                        </td>
-                        <td class="px-6 py-4 text-blue-600">
-                            <?php echo htmlspecialchars($athlete['username']); ?>
-                        </td>
-                        <td class="px-6 py-4">
-                            <?php
-                            $levelColors = [
-                                'Principiante' => 'bg-orange-100 text-orange-700',
-                                'Intermedio' => 'bg-yellow-100 text-yellow-700',
-                                'Avanzado' => 'bg-green-100 text-green-700'
-                            ];
-                            $level = $athlete['level'] ?? 'Principiante';
-                            $colorClass = $levelColors[$level] ?? 'bg-slate-100 text-slate-700';
-                            ?>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $colorClass; ?>">
-                                <?php echo htmlspecialchars($level); ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-slate-600">
-                            <?php echo htmlspecialchars($athlete['goal_pace'] ?? '-'); ?>/km
-                        </td>
-                        <td class="px-6 py-4 flex gap-2">
-                            <button onclick='openEditModal(<?php echo json_encode($athlete); ?>)'
-                                class="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-all"
-                                title="Editar">
-                                <i data-lucide="pencil" class="w-5 h-5"></i>
-                            </button>
-                            <form method="POST" onsubmit="return confirm('¿Estás seguro de eliminar a este atleta?')"
-                                class="inline">
-                                <input type="hidden" name="action" value="delete_athlete">
-                                <input type="hidden" name="athlete_id" value="<?php echo $athlete['id']; ?>">
-                                <button type="submit"
-                                    class="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                    title="Eliminar">
-                                    <i data-lucide="trash-2" class="w-5 h-5"></i>
-                                </button>
-                            </form>
+            </thead>
+            <tbody style="color: var(--text-main); font-size: 0.9rem;">
+                <?php if (empty($athletes)): ?>
+                    <tr>
+                        <td colspan="4" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                            No hay atletas registrados aún. <span onclick="openCreateModal()"
+                                style="color: var(--primary); cursor: pointer; font-weight: 700;">Empieza aquí</span>
                         </td>
                     </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+                <?php else: ?>
+                    <?php foreach ($athletes as $athlete): ?>
+                        <tr style="border-bottom: 1px solid var(--border);" class="athlete-row">
+                            <td style="padding: 1.25rem 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div
+                                        style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-main); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);">
+                                        <i data-lucide="user" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700;"><?php echo htmlspecialchars($athlete['name']); ?></div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                            <?php echo htmlspecialchars($athlete['username']); ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem;">
+                                        <?php
+                                        $level = $athlete['level'] ?? 'Principiante';
+                                        $badgeStyle = $level === 'Avanzado' ? 'badge-emerald' : ($level === 'Intermedio' ? 'background: #fef3c7; color: #92400e;' : 'background: #f3f4f6; color: #374151;');
+                                        ?>
+                                        <span class="badge"
+                                            style="<?php echo $badgeStyle; ?> font-size: 0.7rem;"><?php echo htmlspecialchars(strtoupper($level)); ?></span>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem; font-weight: 700;">
+                                        <?php echo htmlspecialchars($athlete['goal_pace'] ?? '-'); ?> <span
+                                            style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">min/km</span>
+                                    </td>
+                                    <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                            <button onclick='openEditModal(<?php echo json_encode($athlete); ?>)'
+                                                class="btn btn-secondary" style="padding: 0.5rem; border-radius: 6px;" title="Editar">
+                                                <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                            <form method="POST" onsubmit="return confirm('¿Eliminar atleta permanentemente?')"
+                                                style="display: inline;">
+                                                <input type="hidden" name="action" value="delete_athlete">
+                                                <input type="hidden" name="athlete_id" value="<?php echo $athlete['id']; ?>">
+                                                <button type="submit" class="btn btn-secondary"
+                                                    style="padding: 0.5rem; border-radius: 6px; color: #ef4444;" title="Eliminar">
+                                                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                        <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Modal Atleta (Create/Edit) -->
-<div id="modalAtleta" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+<div id="modalAtleta" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 600px; margin: 1rem; max-h-[90vh] overflow-y-auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <div>
-                <h3 class="text-xl font-bold text-slate-900" id="modalTitle">REGISTRAR NUEVO ATLETA</h3>
-                <p class="text-slate-500 text-sm mt-1" id="modalSubtitle">Completa la información del atleta para
-                    agregarlo a tu equipo.</p>
+                <h3 id="modalTitle" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin: 0;">NUEVO ATLETA</h3>
+                <p id="modalSubtitle" style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Completa el perfil del corredor</p>
             </div>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
+            <button onclick="closeModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;"><i data-lucide="x"></i></button>
         </div>
 
-        <form method="POST" class="p-6 space-y-6" id="athleteForm">
+        <form method="POST" id="athleteForm" style="display: flex; flex-direction: column; gap: 1.5rem;">
             <input type="hidden" name="action" id="formAction" value="create_athlete">
             <input type="hidden" name="athlete_id" id="athleteId">
 
-            <div class="grid grid-cols-2 gap-6">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo *</label>
-                    <input type="text" name="name" id="fieldName" placeholder="Juan Pérez" required
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Nombre Completo</label>
+                    <input type="text" name="name" id="fieldName" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email *</label>
-                    <input type="email" name="email" id="fieldEmail" placeholder="atleta@email.com" required
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Email</label>
+                    <input type="email" name="email" id="fieldEmail" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña <span
-                        id="pwdLabelExtra">*</span></label>
-
-                <!-- Password Mode Selection -->
-                <div class="flex gap-4 mb-3" id="passwordModeSection">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="password_mode" value="auto" checked onchange="togglePasswordMode()"
-                            class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                        <span class="text-sm text-slate-700">Generar automáticamente</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="password_mode" value="manual" onchange="togglePasswordMode()"
-                            class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                        <span class="text-sm text-slate-700">Ingresar manualmente</span>
-                    </label>
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Contraseña <span id="pwdLabelExtra"></span></label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="password" name="password" id="passwordField" style="flex: 1; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
+                    <button type="button" onclick="generatePassword()" class="btn btn-secondary" style="padding: 0.5rem;"><i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i></button>
                 </div>
-
-                <div class="flex gap-2">
-                    <input type="text" name="password" id="passwordField" oninput="checkPasswordStrength()"
-                        class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-mono outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="button" onclick="togglePassword()"
-                        class="px-4 py-3 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
-                        <i data-lucide="eye-off" class="w-5 h-5 text-slate-600" id="togglePwdIcon"></i>
-                    </button>
-                    <button type="button" onclick="generatePassword()" id="generateBtn"
-                        class="px-4 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 text-white"></i>
-                    </button>
-                </div>
-
-                <!-- Strength Meter -->
-                <div id="strengthMeter" class="mt-3 hidden">
-                    <div class="flex items-center gap-2 mb-1">
-                        <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div id="strengthBar" class="h-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                        <span id="strengthText" class="text-xs font-semibold">-</span>
-                    </div>
-                </div>
-
-                <!-- Password Criteria (shown for manual mode) -->
-                <div id="passwordCriteria" class="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hidden">
-                    <p class="text-xs font-semibold text-slate-700 mb-2">Criterios de contraseña segura:</p>
-                    <ul class="space-y-1 text-xs">
-                        <li id="criteria-length" class="flex items-center gap-2 text-slate-500">
-                            <i data-lucide="circle" class="w-3 h-3"></i>
-                            Mínimo 8 caracteres
-                        </li>
-                        <li id="criteria-uppercase" class="flex items-center gap-2 text-slate-500">
-                            <i data-lucide="circle" class="w-3 h-3"></i>
-                            Al menos una letra mayúscula (A-Z)
-                        </li>
-                        <li id="criteria-lowercase" class="flex items-center gap-2 text-slate-500">
-                            <i data-lucide="circle" class="w-3 h-3"></i>
-                            Al menos una letra minúscula (a-z)
-                        </li>
-                        <li id="criteria-number" class="flex items-center gap-2 text-slate-500">
-                            <i data-lucide="circle" class="w-3 h-3"></i>
-                            Al menos un número (0-9)
-                        </li>
-                        <li id="criteria-special" class="flex items-center gap-2 text-slate-500">
-                            <i data-lucide="circle" class="w-3 h-3"></i>
-                            Al menos un carácter especial (!@#$%^&*)
-                        </li>
-                    </ul>
-                </div>
-
-                <p class="text-xs text-slate-500 mt-2" id="pwdHelp">La contraseña se genera automáticamente. El atleta
-                    podrá cambiarla al iniciar sesión.</p>
+                <p id="pwdHelp" style="font-size: 0.7rem; color: var(--text-muted); margin: 0;"></p>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nivel</label>
-                    <select name="level" id="fieldLevel"
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Nivel</label>
+                    <select name="level" id="fieldLevel" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                         <option value="Principiante">Principiante</option>
                         <option value="Intermedio">Intermedio</option>
                         <option value="Avanzado">Avanzado</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Ritmo Objetivo (min/km)</label>
-                    <input type="text" name="goal_pace" id="fieldGoalPace" placeholder="5:30"
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Ritmo Obj (min/km)</label>
+                    <input type="text" name="goal_pace" id="fieldGoalPace" placeholder="5:30" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha Objetivo (Competencia)</label>
-                    <input type="date" name="goal_date" id="fieldGoalDate"
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Fecha Objetivo</label>
+                    <input type="date" name="goal_date" id="fieldGoalDate" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Día Preferido para Fondo</label>
-                    <select name="preferred_long_run_day" id="fieldLongRunDay"
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Día de Fondo</label>
+                    <select name="preferred_long_run_day" id="fieldLongRunDay" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                         <option value="Domingo">Domingo</option>
                         <option value="Sábado">Sábado</option>
                         <option value="Viernes">Viernes</option>
@@ -311,30 +241,7 @@ include 'views/layout/header.php';
                 </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Tiempo Máximo por Sesión
-                    (minutos)</label>
-                <input type="number" name="max_time_per_session" id="fieldMaxTime" placeholder="90" value="90"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Observaciones</label>
-                <textarea name="observations" id="fieldObservations" rows="3"
-                    placeholder="Lesiones previas, preferencias, notas importantes..."
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-4 pt-4 border-t border-slate-100">
-                <button type="button" onclick="closeModal()"
-                    class="px-6 py-3 border border-slate-200 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-                    Cancelar
-                </button>
-                <button type="submit"
-                    class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
-                    Guardar Atleta
-                </button>
-            </div>
+            <button type="submit" class="btn btn-primary" style="padding: 1rem; margin-top: 1rem;">Guardar Atleta</button>
         </form>
     </div>
 </div>
