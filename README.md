@@ -8,25 +8,26 @@ SIMON es una plataforma web modular diseñada para entrenadores y atletas de run
 - **Gestión de Atletas**: Registro y seguimiento personalizado de corredores.
 - **Plantillas de Entrenamiento**: Creación de sesiones reutilizables (Series, Fondo, Tempo, etc.).
 - **Generación de Planes**: Creación de planes semanales con **personalización individual** de instrucciones para cada atleta sin necesidad de duplicar plantillas.
+- **Landing Page**: Página de inicio de alta fidelidad con soporte para **Modo Oscuro (Dark) y Claro (Light)**.
 - **Dashboard de Métricas**: Visualización del cumplimiento de los planes y feedback de los atletas.
-- **Feedback Directo**: Sistema de respuestas a los comentarios de los corredores.
 
 ### Para Atletas
 - **Calendario Semanal**: Visualización clara de los entrenamientos asignados.
+- **Interfaz Adaptativa**: Soporte para temas oscuro/claro según preferencia.
 - **Registro de Resultados**: Carga de distancia, tiempo, ritmo y esfuerzo percibido (RPE).
-- **Historial de Progreso**: Gráficos de evolución y estadísticas de entrenamiento.
-- **Notificaciones**: Avisos de nuevos planes y respuestas del entrenador.
 
 ## 🛠️ Arquitectura Técnica
 
 El sistema está construido como un monolito PHP modular y escalable:
 - **Backend**: PHP (MVC simplificado).
 - **Base de Datos**: MySQL.
-- **Frontend**: HTML5, Vanilla JS, CSS3 (Tailwind CSS vía CDN).
-- **Componentes**:
-  - `models/`: Lógica de acceso a datos (Atletas, Workouts, Equipos).
-  - `views/`: Vistas desacopladas para una mejor mantenibilidad.
-  - `includes/`: Autenticación, conexión a DB y utilidades generales.
+- **Frontend**: HTML5, Vanilla JS, CSS3 (Tailwind CSS vía CDN + Google Stitch Tokens).
+- **Sistema de Diseño**:
+  - **Tipografía**: Lexend (Google Fonts).
+  - **Color Primario**: Emerald Green (#0df280).
+  - **Bordes**: 8px (Round_Eight).
+  - **Temas**: Soporte nativo para Dark y Light mode mediante variables CSS.
+
 
 ## 📋 PRD (Documento de Requerimientos del Producto)
 

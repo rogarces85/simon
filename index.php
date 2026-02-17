@@ -2,10 +2,12 @@
 require_once 'includes/auth.php';
 Auth::init();
 
-// Simple router/entry point
+// If logged in, go to dashboard
 if (Auth::check()) {
     header('Location: dashboard.php');
-} else {
-    header('Location: login.php');
+    exit;
 }
-exit;
+
+// Else, show the high-fidelity landing page
+include 'views/landing_view.php';
+?>
