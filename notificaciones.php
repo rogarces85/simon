@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'models/Notification.php';
 require_once 'models/User.php';
 
@@ -13,7 +14,9 @@ $userId = $user['id'];
 $success = null;
 $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'send_notification') {
-    if ($user['role'] !== 'coach') {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        $error = 'Sesión expirada, intenta nuevamente.';
+    } elseif ($user['role'] !== 'coach') {
         $error = "No tienes permisos para realizar esta acción.";
     } else {
         $targetId = $_POST['target_id'];
@@ -123,6 +126,7 @@ include 'views/layout/header.php';
             </h2>
             <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <form method="POST" class="space-y-6">
+                    <?php echo Csrf::field(); ?>
                     <input type="hidden" name="action" value="send_notification">
 
                     <div>

@@ -18,15 +18,6 @@ class Team
         return $db->lastInsertId();
     }
 
-    // Obtener Team por ID
-    public static function find($id)
-    {
-        $db = Database::getInstance();
-        $stmt = $db->prepare("SELECT * FROM teams WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch();
-    }
-
     // Obtener Team por Coach ID
     public static function findByCoach($coachId)
     {

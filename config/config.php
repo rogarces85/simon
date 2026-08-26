@@ -4,10 +4,26 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-define('DB_HOST', 'srv1663.hstgr.io');
-define('DB_NAME', 'u901416689_runcoach');
-define('DB_USER', 'u901416689_runcoach');
-define('DB_PASS', '9D8Q2>uR');
+// Credenciales reales: se leen de config/config.local.php (no versionado,
+// ver config/config.example.php) o de variables de entorno. Nunca se
+// hardcodean aquí para evitar exponerlas si el repositorio es público.
+$localConfig = __DIR__ . '/config.local.php';
+if (file_exists($localConfig)) {
+    require_once $localConfig;
+}
+
+if (!defined('DB_HOST')) {
+    define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', getenv('DB_NAME') ?: '');
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', getenv('DB_USER') ?: '');
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', getenv('DB_PASS') ?: '');
+}
 define('DB_CHARSET', 'utf8mb4');
 
 // Other configurations

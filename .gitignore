@@ -1,5 +1,7 @@
 # PHP project ignores
 .DS_Store
 *.log
-# config/config.php (Removed to allow deployment via GitHub)
+# Credenciales reales — nunca versionar. config/config.php solo tiene
+# valores placeholder/getenv(); config/config.local.php trae los reales.
+config/config.local.php
 # Add any other sensitive or temporary files here

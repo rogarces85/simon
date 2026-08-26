@@ -92,52 +92,16 @@ class Workout
         return $workout;
     }
 
-    public static function getByCoach($coachId, $from = null, $to = null)
+    public static function addCoachFeedback($workoutId, $feedback, $coachId)
     {
         $db = Database::getInstance();
-        $sql = "SELECT w.*, u.name as athlete_name, u.username as athlete_email 
-                FROM workouts w 
-                INNER JOIN users u ON w.athlete_id = u.id 
-                WHERE u.coach_id = ?";
-        $params = [$coachId];
-
-        if ($from) {
-            $sql .= " AND w.date >= ?";
-            $params[] = $from;
-        }
-        if ($to) {
-            $sql .= " AND w.date <= ?";
-            $params[] = $to;
-        }
-
-        $sql .= " ORDER BY w.date DESC";
+        $sql = "UPDATE workouts w
+                INNER JOIN users u ON w.athlete_id = u.id
+                SET w.coach_feedback = ?, w.coach_feedback_at = NOW()
+                WHERE w.id = ? AND u.coach_id = ?";
         $stmt = $db->prepare($sql);
-        $stmt->execute($params);
-        $workouts = $stmt->fetchAll();
-
-        foreach ($workouts as &$w) {
-            if ($w['structure'])
-                $w['structure'] = json_decode($w['structure'], true);
-        }
-
-        return $workouts;
-    }
-
-    public static function markAsReceived($athleteId)
-    {
-        $db = Database::getInstance();
-        $sql = "UPDATE workouts SET delivery_status = 'received', viewed_at = NOW() 
-                WHERE athlete_id = ? AND delivery_status = 'sent' AND viewed_at IS NULL";
-        $stmt = $db->prepare($sql);
-        return $stmt->execute([$athleteId]);
-    }
-
-    public static function addCoachFeedback($workoutId, $feedback)
-    {
-        $db = Database::getInstance();
-        $sql = "UPDATE workouts SET coach_feedback = ?, coach_feedback_at = NOW() WHERE id = ?";
-        $stmt = $db->prepare($sql);
-        return $stmt->execute([$feedback, $workoutId]);
+        $stmt->execute([$feedback, $workoutId, $coachId]);
+        return $stmt->rowCount() > 0;
     }
 
     public static function getCompletedByCoach($coachId, $athleteId = null)
@@ -165,21 +129,6 @@ class Workout
         }
 
         return $workouts;
-    }
-
-    public static function getPlanStatsByCoach($coachId)
-    {
-        $db = Database::getInstance();
-        $sql = "SELECT 
-                    w.delivery_status,
-                    COUNT(*) as count
-                FROM workouts w 
-                INNER JOIN users u ON w.athlete_id = u.id 
-                WHERE u.coach_id = ? AND w.date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-                GROUP BY w.delivery_status";
-        $stmt = $db->prepare($sql);
-        $stmt->execute([$coachId]);
-        return $stmt->fetchAll();
     }
 
     // Get detailed metrics for an athlete

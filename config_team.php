@@ -1,5 +1,7 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
+require_once 'includes/FileUpload.php';
 require_once 'models/Team.php';
 
 Auth::init();
@@ -10,22 +12,22 @@ $team = Team::findByCoach($user['id']);
 $success = null;
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] ?? '')) {
+    $error = 'Sesión expirada, intenta nuevamente.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'] ?? '';
     $color = $_POST['primary_color'] ?? '#3b82f6';
     $logoUrl = $team['logo_url'] ?? null;
 
     // Handle File Upload
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/uploads/teams/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
+        if (FileUpload::validate($_FILES['logo'], ['jpg', 'jpeg', 'png', 'webp'])) {
+            $uploadDir = __DIR__ . '/uploads/teams/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
 
-        $fileExt = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-
-        if (in_array($fileExt, $allowed)) {
+            $fileExt = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
             $fileName = 'team_' . $user['id'] . '_' . time() . '.' . $fileExt;
             $uploadPath = $uploadDir . $fileName;
 
@@ -35,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "Error al subir la imagen.";
             }
         } else {
-            $error = "Tipo de archivo no permitido (solo JPG, PNG, WEBP).";
+            $error = "Tipo de archivo no permitido (solo JPG, PNG, WEBP de hasta 5MB).";
         }
     }
 
@@ -86,6 +88,7 @@ include 'views/layout/header.php';
 
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <form method="POST" enctype="multipart/form-data" class="space-y-8">
+            <?php echo Csrf::field(); ?>
 
             <!-- Logo Upload -->
             <div class="flex items-center gap-6">

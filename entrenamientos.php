@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'includes/db.php';
 require_once 'models/User.php';
 require_once 'models/Workout.php';
@@ -18,13 +19,19 @@ $periodFilter = $_GET['period'] ?? 'all';
 
 // Handle coach feedback submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        header('Location: entrenamientos.php?csrf_error=1');
+        exit;
+    }
+
     if ($_POST['action'] === 'add_feedback') {
         $workoutId = $_POST['workout_id'];
         $feedback = $_POST['coach_feedback'];
-        Workout::addCoachFeedback($workoutId, $feedback);
+        $updated = Workout::addCoachFeedback($workoutId, $feedback, $coach['id']);
 
-        // Get the workout to find the athlete
-        $workout = Workout::getById($workoutId);
+        // Get the workout to find the athlete (solo si el update tuvo efecto,
+        // es decir, el workout realmente pertenecía a un atleta de este coach)
+        $workout = $updated ? Workout::getById($workoutId) : null;
         if ($workout) {
             $msg = "💬 Tu entrenador ha respondido a tu feedback del entrenamiento del " . (new DateTime($workout['date']))->format('d/m/Y');
             Notification::create($workout['athlete_id'], $msg, 'info');
@@ -337,6 +344,8 @@ include 'views/layout/header.php';
 </div>
 
 <script>
+    const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
+
     function openWorkoutModal(workout) {
         const modal = document.getElementById('workoutModal');
         const content = document.getElementById('modalContent');
@@ -389,6 +398,7 @@ include 'views/layout/header.php';
             // Show response form
             html += `
                 <form method="POST" class="space-y-4 border-t border-slate-100 pt-4">
+                    <input type="hidden" name="csrf_token" value="${CSRF_TOKEN}">
                     <input type="hidden" name="action" value="add_feedback">
                     <input type="hidden" name="workout_id" value="${workout.id}">
                     <div>

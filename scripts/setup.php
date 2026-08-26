@@ -86,6 +86,14 @@ try {
             INDEX (coach_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
 
+        "CREATE TABLE IF NOT EXISTS login_attempts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL,
+            ip_address VARCHAR(45) NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (username, created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
         "CREATE TABLE IF NOT EXISTS workouts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             athlete_id INT NOT NULL,
@@ -95,12 +103,15 @@ try {
             status VARCHAR(50) DEFAULT 'pending',
             planned_distance INT NULL,
             planned_time INT NULL,
-            actual_distance INT NULL,
-            actual_time INT NULL,
+            actual_distance DECIMAL(6,2) NULL,
+            actual_time DECIMAL(6,2) NULL,
             rpe INT NULL,
             feedback TEXT NULL,
-            evidence_url VARCHAR(255) NULL,
+            evidence_path VARCHAR(255) NULL,
             coach_feedback TEXT NULL,
+            coach_feedback_at DATETIME NULL,
+            delivery_status VARCHAR(20) DEFAULT 'pending',
+            viewed_at DATETIME NULL,
             completed_at DATETIME NULL,
             structure TEXT NULL,
             INDEX (athlete_id),
@@ -114,13 +125,6 @@ try {
     }
 
     // 1.1 Columnas Faltantes (Alter Table)
-    // Verificar si falta evidence_url en workouts (para migraciones)
-    try {
-        $db->exec("ALTER TABLE workouts ADD COLUMN evidence_url VARCHAR(255) NULL");
-        echo "✅ Columna evidence_url agregada (o advertencia ignorada).<br>";
-    } catch (PDOException $e) {
-        // Ignorar si ya existe
-    }
     try {
         $db->exec("ALTER TABLE users ADD COLUMN team_id INT NULL");
         echo "✅ Columna team_id agregada (o advertencia ignorada).<br>";

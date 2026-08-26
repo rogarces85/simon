@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'includes/db.php';
 require_once 'includes/Mailer.php';
 require_once 'models/User.php';
@@ -19,6 +20,11 @@ $successMsg = '';
 $errorMsg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        header('Location: generar_plan.php?csrf_error=1');
+        exit;
+    }
+
     // Generate plan
     if ($_POST['action'] === 'generate_plan') {
         $athleteId = $_POST['athlete_id'];
@@ -173,6 +179,7 @@ include 'views/layout/header.php';
                 </div>
 
                 <form method="POST" id="planForm">
+                    <?php echo Csrf::field(); ?>
                     <input type="hidden" name="action" value="generate_plan">
                     <div class="grid grid-cols-2 gap-6 mb-8">
                         <div>
@@ -384,6 +391,7 @@ include 'views/layout/header.php';
             </div>
 
             <form method="POST" class="p-6 space-y-5">
+                <?php echo Csrf::field(); ?>
                 <input type="hidden" name="action" id="templateAction" value="create_template">
                 <input type="hidden" name="template_id" id="templateId" value="">
 
@@ -434,6 +442,8 @@ include 'views/layout/header.php';
     </div>
 
     <script>
+        const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
+
         function openTemplateModal() {
             document.getElementById('templateModalTitle').textContent = 'Nueva Plantilla';
             document.getElementById('templateAction').value = 'create_template';
@@ -469,7 +479,7 @@ include 'views/layout/header.php';
             if (confirm('¿Estás seguro de eliminar esta plantilla?')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.innerHTML = `<input type="hidden" name="action" value="delete_template"><input type="hidden" name="template_id" value="${id}">`;
+                form.innerHTML = `<input type="hidden" name="csrf_token" value="${CSRF_TOKEN}"><input type="hidden" name="action" value="delete_template"><input type="hidden" name="template_id" value="${id}">`;
                 document.body.appendChild(form);
                 form.submit();
             }

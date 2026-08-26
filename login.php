@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'models/User.php';
 require_once 'config/config.php';
 Auth::init();
@@ -11,14 +12,20 @@ if (Auth::check()) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        $error = 'Sesión expirada, intenta nuevamente.';
+    } else {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    if (Auth::login($username, $password)) {
+    if (Auth::isLoginLocked($username)) {
+        $error = 'Demasiados intentos fallidos. Intenta nuevamente en unos minutos.';
+    } elseif (Auth::login($username, $password)) {
         header('Location: dashboard.php');
         exit;
     } else {
         $error = 'Credenciales inválidas';
+    }
     }
 }
 ?>
@@ -61,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" class="space-y-6">
+            <?php echo Csrf::field(); ?>
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Usuario</label>
                 <input type="text" name="username" placeholder="usuario@ejemplo.com" required

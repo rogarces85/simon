@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'models/User.php';
 
 Auth::init();
@@ -9,6 +10,9 @@ $error = null;
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        $error = 'Sesión expirada, intenta nuevamente.';
+    } else {
     $name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
@@ -35,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         $error = "Todos los campos son obligatorios.";
+    }
     }
 }
 
@@ -68,6 +73,7 @@ include 'views/layout/header.php';
 
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <form method="POST" class="space-y-6">
+            <?php echo Csrf::field(); ?>
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Nombre Completo</label>
                 <input type="text" name="name" required

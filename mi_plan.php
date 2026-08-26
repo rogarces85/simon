@@ -1,5 +1,7 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
+require_once 'includes/FileUpload.php';
 require_once 'includes/db.php';
 require_once 'models/User.php';
 require_once 'models/Workout.php';
@@ -17,6 +19,11 @@ $team = Team::findByCoach($user['coach_id'] ?? 0);
 
 // Handle form submissions (record results, upload evidence)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        header('Location: mi_plan.php?csrf_error=1');
+        exit;
+    }
+
     if ($_POST['action'] === 'complete_workout') {
         $workoutId = $_POST['workout_id'];
         $updateData = [
@@ -30,11 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         ];
 
         // Handle file upload
-        if (isset($_FILES['evidence']) && $_FILES['evidence']['error'] === UPLOAD_ERR_OK) {
+        if (isset($_FILES['evidence']) && FileUpload::validate($_FILES['evidence'], ['jpg', 'jpeg', 'png', 'webp'])) {
             $uploadDir = 'uploads/evidence/';
             if (!is_dir($uploadDir))
                 mkdir($uploadDir, 0777, true);
-            $ext = pathinfo($_FILES['evidence']['name'], PATHINFO_EXTENSION);
+            $ext = strtolower(pathinfo($_FILES['evidence']['name'], PATHINFO_EXTENSION));
             $filename = 'evidence_' . $workoutId . '_' . time() . '.' . $ext;
             $dest = $uploadDir . $filename;
             if (move_uploaded_file($_FILES['evidence']['tmp_name'], $dest)) {
@@ -329,6 +336,8 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
 </div>
 
 <script>
+    const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
+
     function openWorkoutModal(workout, dateKey) {
         const modal = document.getElementById('workoutModal');
         const content = document.getElementById('modalContent');
@@ -403,6 +412,7 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
             // Show complete form
             html += `
                 <form method="POST" enctype="multipart/form-data" class="space-y-4 border-t border-slate-100 pt-4">
+                    <input type="hidden" name="csrf_token" value="${CSRF_TOKEN}">
                     <input type="hidden" name="action" value="complete_workout">
                     <input type="hidden" name="workout_id" value="${workout.id}">
                     <h4 class="text-sm font-bold text-slate-700">Registrar Resultados</h4>

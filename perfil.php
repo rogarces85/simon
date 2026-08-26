@@ -1,5 +1,7 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
+require_once 'includes/FileUpload.php';
 require_once 'models/User.php';
 require_once 'models/Team.php';
 
@@ -16,7 +18,9 @@ $user = User::getById($userSession['id']);
 $success = null;
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] ?? '')) {
+    $error = 'Sesión expirada, intenta nuevamente.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -24,18 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Avatar Upload
     $avatarUrl = $user['avatar_url'];
-    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+    if (isset($_FILES['avatar']) && FileUpload::validate($_FILES['avatar'], ['jpg', 'jpeg', 'png', 'webp'])) {
         $uploadDir = __DIR__ . '/uploads/avatars/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
         $fileExt = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-        if (in_array($fileExt, $allowed)) {
-            $fileName = 'avatar_' . $user['id'] . '_' . time() . '.' . $fileExt;
-            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadDir . $fileName)) {
-                $avatarUrl = 'uploads/avatars/' . $fileName;
-            }
+        $fileName = 'avatar_' . $user['id'] . '_' . time() . '.' . $fileExt;
+        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadDir . $fileName)) {
+            $avatarUrl = 'uploads/avatars/' . $fileName;
         }
     }
 
@@ -55,11 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare($sql);
         if ($stmt->execute($params)) {
             $success = "Perfil actualizado correctamente.";
-            // Refresh session user data
-            $_SESSION['user_name'] = $name; // Or however Auth stores it. Auth::user() usually fetches from session or DB.
-            // If Auth stores in session, update it.
-            // Assuming Auth methods might need refresh or re-login. 
-            // For now let's just reload page.
+            // Refrescar el nombre en sesión (Auth::user() lee $_SESSION['name'])
+            $_SESSION['name'] = $name;
             $user['name'] = $name;
             $user['email'] = $email;
             $user['avatar_url'] = $avatarUrl;
@@ -124,6 +122,7 @@ include 'views/layout/header.php';
             </div>
 
             <form id="profileForm" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <?php echo Csrf::field(); ?>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>

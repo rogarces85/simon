@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'includes/Csrf.php';
 require_once 'includes/db.php';
 require_once 'models/User.php';
 Auth::init();
@@ -9,6 +10,11 @@ $coach = Auth::user();
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
+        header('Location: atletas.php?csrf_error=1');
+        exit;
+    }
+
     if ($_POST['action'] === 'create_athlete') {
         $athleteData = [
             'username' => $_POST['email'],
@@ -158,6 +164,7 @@ include 'views/layout/header.php';
                             </button>
                             <form method="POST" onsubmit="return confirm('¿Estás seguro de eliminar a este atleta?')"
                                 class="inline">
+                                <?php echo Csrf::field(); ?>
                                 <input type="hidden" name="action" value="delete_athlete">
                                 <input type="hidden" name="athlete_id" value="<?php echo $athlete['id']; ?>">
                                 <button type="submit"
@@ -189,6 +196,7 @@ include 'views/layout/header.php';
         </div>
 
         <form method="POST" class="p-6 space-y-6" id="athleteForm">
+            <?php echo Csrf::field(); ?>
             <input type="hidden" name="action" id="formAction" value="create_athlete">
             <input type="hidden" name="athlete_id" id="athleteId">
 
