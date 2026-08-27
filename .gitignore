@@ -5,3 +5,5 @@
 # valores placeholder/getenv(); config/config.local.php trae los reales.
 config/config.local.php
 # Add any other sensitive or temporary files here
+# Credenciales de produccion (Hostinger) — nunca versionar.
+config/config.production.php

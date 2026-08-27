@@ -32,11 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         $createdWorkouts = [];
 
+        // Sin esta comprobacion un coach podia generarle un plan al atleta de otro.
+        if (!User::belongsToCoach($athleteId, $coach['id'])) {
+            header('Location: generar_plan.php?denied=1');
+            exit;
+        }
+
         foreach ($days as $i => $day) {
             $templateId = $_POST['template_' . $day] ?? null;
             if ($templateId) {
-                $stmt = $db->prepare("SELECT * FROM templates WHERE id = ?");
-                $stmt->execute([$templateId]);
+                // El coach_id evita usar las plantillas de otro coach.
+                $stmt = $db->prepare("SELECT * FROM templates WHERE id = ? AND coach_id = ?");
+                $stmt->execute([$templateId, $coach['id']]);
                 $template = $stmt->fetch();
 
                 if ($template) {
@@ -74,6 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 Notification::create($athleteId, $msg, 'info');
             }
         }
+        // Sin entrenamientos creados no hubo plan: puede ser que no se eligiera
+        // ninguna plantilla, o que las elegidas no sean de este coach.
+        if (empty($createdWorkouts)) {
+            header('Location: generar_plan.php?vacio=1');
+            exit;
+        }
+
         header('Location: generar_plan.php?success=plan');
         exit;
     }
@@ -145,6 +159,18 @@ include 'views/layout/header.php';
     ?>
     <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
         <?php echo $msg; ?>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['denied'])): ?>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
+        ⚠️ No se generó el plan: ese atleta no pertenece a tu equipo.
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['vacio'])): ?>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
+        ⚠️ No se creó ningún entrenamiento. Revisa que hayas elegido al menos una plantilla propia.
     </div>
 <?php endif; ?>
 

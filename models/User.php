@@ -20,7 +20,7 @@ class User
             $data['goal_date'] ?? null,
             $data['goal_pace'] ?? null,
             $data['level'] ?? null,
-            isset($data['available_days']) ? json_encode($data['available_days']) : null,
+            self::encodeAvailableDays($data['available_days'] ?? null),
             $data['preferred_long_run_day'] ?? null,
             $data['max_time_per_session'] ?? null,
             $data['observations'] ?? null
@@ -49,20 +49,44 @@ class User
         return $stmt->fetchAll();
     }
 
-    public static function update($id, $data)
+    /**
+     * Serializa available_days una sola vez. Antes atletas.php hacia json_encode
+     * y este modelo lo repetia, guardando la cadena doblemente codificada.
+     */
+    private static function encodeAvailableDays($value)
     {
+        if ($value === null) {
+            return null;
+        }
+        return is_array($value) ? json_encode(array_values($value)) : $value;
+    }
+
+    /** Verdadero solo si $athleteId es un atleta de $coachId. */
+    public static function belongsToCoach($athleteId, $coachId)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE id = ? AND coach_id = ? AND role = 'athlete'");
+        $stmt->execute([$athleteId, $coachId]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * $coachId acota la operacion a los atletas de ese coach. Las llamadas que
+     * no lo pasan (perfil propio, admin) mantienen el comportamiento anterior.
+     */
+    public static function update($id, $data, $coachId = null)
+    {
+        if ($coachId !== null && !self::belongsToCoach($id, $coachId)) {
+            return false;
+        }
+
         $db = Database::getInstance();
         $fields = [];
         $values = [];
 
         foreach ($data as $key => $value) {
-            if ($key === 'available_days') {
-                $fields[] = "$key = ?";
-                $values[] = json_encode($value);
-            } else {
-                $fields[] = "$key = ?";
-                $values[] = $value;
-            }
+            $fields[] = "$key = ?";
+            $values[] = ($key === 'available_days') ? self::encodeAvailableDays($value) : $value;
         }
 
         if (empty($fields))
@@ -74,8 +98,12 @@ class User
         return $stmt->execute($values);
     }
 
-    public static function delete($id)
+    public static function delete($id, $coachId = null)
     {
+        if ($coachId !== null && !self::belongsToCoach($id, $coachId)) {
+            return false;
+        }
+
         $db = Database::getInstance();
         $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
         return $stmt->execute([$id]);

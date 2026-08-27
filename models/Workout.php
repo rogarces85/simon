@@ -53,7 +53,13 @@ class Workout
         return $workouts;
     }
 
-    public static function update($id, $data)
+    /**
+     * $athleteId acota la operacion al dueño del entrenamiento: sin ese filtro
+     * un atleta podia completar el entrenamiento de otro pasando su workout_id.
+     * Las llamadas que no lo pasan (coach, admin) conservan el comportamiento
+     * anterior.
+     */
+    public static function update($id, $data, $athleteId = null)
     {
         $db = Database::getInstance();
         $fields = [];
@@ -74,8 +80,15 @@ class Workout
 
         $values[] = $id;
         $sql = "UPDATE workouts SET " . implode(', ', $fields) . " WHERE id = ?";
+
+        if ($athleteId !== null) {
+            $sql .= " AND athlete_id = ?";
+            $values[] = $athleteId;
+        }
+
         $stmt = $db->prepare($sql);
-        return $stmt->execute($values);
+        $stmt->execute($values);
+        return $stmt->rowCount() > 0;
     }
 
     public static function getById($id)

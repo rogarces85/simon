@@ -21,12 +21,14 @@ class Notification
         return $stmt->fetchAll();
     }
 
-    // Marcar como leída
-    public static function markAsRead($id)
+    // Marcar como leída. $userId acota el UPDATE al dueño de la notificación:
+    // sin ese filtro cualquier usuario autenticado podía marcar las ajenas.
+    public static function markAsRead($id, $userId)
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare("UPDATE notifications SET is_read = 1 WHERE id = ?");
-        return $stmt->execute([$id]);
+        $stmt = $db->prepare("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?");
+        $stmt->execute([$id, $userId]);
+        return $stmt->rowCount() > 0;
     }
 
     // Marcar todas como leídas

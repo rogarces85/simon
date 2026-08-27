@@ -49,7 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
 
-        Workout::update($workoutId, $updateData);
+        // El id del atleta acota el UPDATE a sus propios entrenamientos: si el
+        // workout_id es de otro atleta no se toca nada y no se avisa al coach.
+        if (!Workout::update($workoutId, $updateData, $user['id'])) {
+            header('Location: mi_plan.php?denied=1&month=' . ($_GET['month'] ?? date('Y-m')));
+            exit;
+        }
 
         // Notify coach about completed workout
         if ($user['coach_id']) {
@@ -86,11 +91,13 @@ $workouts = Workout::getByAthlete(
     $monthEnd->format('Y-m-d 23:59:59')
 );
 
-// Index workouts by date
+// Index workouts by date. Es una lista por fecha, no un solo entrenamiento:
+// antes, si un dia tenia dos sesiones, la segunda pisaba a la primera y el
+// atleta solo veia una en el calendario.
 $workoutsByDate = [];
 foreach ($workouts as $w) {
     $dateKey = (new DateTime($w['date']))->format('Y-m-d');
-    $workoutsByDate[$dateKey] = $w;
+    $workoutsByDate[$dateKey][] = $w;
 }
 
 // Calendar calculations
@@ -145,6 +152,12 @@ include 'views/layout/header.php';
 <?php if (isset($_GET['success'])): ?>
     <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
         ✅ Entrenamiento registrado exitosamente
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['denied'])): ?>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
+        ⚠️ No se registró el entrenamiento: no corresponde a tu programación.
     </div>
 <?php endif; ?>
 
@@ -235,11 +248,13 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
 
         <?php for ($day = 1; $day <= $daysInMonth; $day++):
             $dateKey = $currentMonth->format('Y-m') . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-            $workout = $workoutsByDate[$dateKey] ?? null;
+            $dayWorkouts = $workoutsByDate[$dateKey] ?? [];
             $isToday = $dateKey === $today->format('Y-m-d');
-            $isRest = $workout && $workout['type'] === 'Descanso';
-            $isCompleted = $workout && $workout['status'] === 'completed';
-            $isPending = $workout && $workout['status'] === 'pending';
+
+            // Los indicadores de la esquina resumen el dia completo.
+            $isRest = $dayWorkouts && count(array_filter($dayWorkouts, fn($w) => $w['type'] !== 'Descanso')) === 0;
+            $trainings = array_filter($dayWorkouts, fn($w) => $w['type'] !== 'Descanso');
+            $isCompleted = $trainings && count(array_filter($trainings, fn($w) => $w['status'] === 'completed')) === count($trainings);
 
             $typeColors = [
                 'Series' => 'bg-purple-100 text-purple-700 border-purple-200',
@@ -249,7 +264,6 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                 'Recuperación' => 'bg-green-100 text-green-700 border-green-200',
                 'Descanso' => 'bg-slate-100 text-slate-500 border-slate-200'
             ];
-            $typeColor = $workout ? ($typeColors[$workout['type']] ?? 'bg-slate-100 text-slate-600 border-slate-200') : '';
             ?>
             <div
                 class="min-h-[120px] border-b border-r border-slate-100 p-2 <?php echo $isToday ? 'bg-blue-50/50 ring-2 ring-inset ring-blue-300' : ''; ?> hover:bg-slate-50 transition-colors">
@@ -266,26 +280,29 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                     <?php endif; ?>
                 </div>
 
-                <?php if ($workout): ?>
-                    <?php if ($isRest): ?>
-                        <!-- Rest Day -->
-                        <div class="px-2 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-center">
-                            <p class="text-xs font-semibold text-slate-500">Descanso</p>
-                        </div>
-                    <?php else: ?>
-                        <!-- Workout Cell -->
-                        <div onclick='openWorkoutModal(<?php echo json_encode($workout); ?>, "<?php echo $dateKey; ?>")'
-                            class="px-2 py-1.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>">
-                            <p class="text-xs font-bold truncate"><?php echo htmlspecialchars($workout['type']); ?></p>
-                            <p class="text-[10px] truncate opacity-80">
-                                <?php echo htmlspecialchars($workout['description'] ?? ''); ?>
-                            </p>
-                            <?php if ($isCompleted && $workout['actual_distance']): ?>
-                                <p class="text-[10px] font-semibold mt-0.5"><?php echo $workout['actual_distance']; ?> km</p>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-                <?php endif; ?>
+                <div class="space-y-1">
+                    <?php foreach ($dayWorkouts as $workout): ?>
+                        <?php $typeColor = $typeColors[$workout['type']] ?? 'bg-slate-100 text-slate-600 border-slate-200'; ?>
+                        <?php if ($workout['type'] === 'Descanso'): ?>
+                            <!-- Rest Day -->
+                            <div class="px-2 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-center">
+                                <p class="text-xs font-semibold text-slate-500">Descanso</p>
+                            </div>
+                        <?php else: ?>
+                            <!-- Workout Cell -->
+                            <div onclick='openWorkoutModal(<?php echo htmlspecialchars(json_encode($workout), ENT_QUOTES); ?>, "<?php echo $dateKey; ?>")'
+                                class="px-2 py-1.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>">
+                                <p class="text-xs font-bold truncate"><?php echo htmlspecialchars($workout['type']); ?></p>
+                                <p class="text-[10px] truncate opacity-80">
+                                    <?php echo htmlspecialchars($workout['description'] ?? ''); ?>
+                                </p>
+                                <?php if ($workout['status'] === 'completed' && $workout['actual_distance']): ?>
+                                    <p class="text-[10px] font-semibold mt-0.5"><?php echo $workout['actual_distance']; ?> km</p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
         <?php endfor; ?>
 
@@ -338,6 +355,21 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
 <script>
     const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
 
+    // El detalle se arma con innerHTML, asi que todo texto que venga de la base
+    // pasa por aqui. Sin esto, un coach que escribiera HTML en una plantilla lo
+    // ejecutaba en el navegador del atleta.
+    function escapeHtml(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function openWorkoutModal(workout, dateKey) {
         const modal = document.getElementById('workoutModal');
         const content = document.getElementById('modalContent');
@@ -349,8 +381,8 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
         // Workout info
         html += `
             <div class="flex items-center gap-3">
-                <span class="px-3 py-1 rounded-lg text-sm font-bold bg-blue-100 text-blue-700">${workout.type}</span>
-                <span class="text-slate-600">${workout.description || ''}</span>
+                <span class="px-3 py-1 rounded-lg text-sm font-bold bg-blue-100 text-blue-700">${escapeHtml(workout.type)}</span>
+                <span class="text-slate-600">${escapeHtml(workout.description)}</span>
             </div>
         `;
 
@@ -362,7 +394,7 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                     <h4 class="text-xs uppercase font-bold text-blue-600 mb-2 flex items-center gap-2">
                         <i data-lucide="clipboard" class="w-4 h-4"></i> Instrucciones del Entrenador
                     </h4>
-                    <p class="text-slate-700 whitespace-pre-wrap text-sm">${structure}</p>
+                    <p class="text-slate-700 whitespace-pre-wrap text-sm">${escapeHtml(structure)}</p>
                 </div>
             `;
         }
@@ -393,7 +425,7 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                 html += `
                     <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
                         <h4 class="text-xs uppercase font-bold text-slate-500 mb-2">Tu Feedback</h4>
-                        <p class="text-slate-700">${workout.feedback}</p>
+                        <p class="text-slate-700">${escapeHtml(workout.feedback)}</p>
                     </div>
                 `;
             }
@@ -404,7 +436,7 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                         <h4 class="text-xs uppercase font-bold text-purple-600 mb-2 flex items-center gap-2">
                             <i data-lucide="check-check" class="w-4 h-4"></i> Respuesta del Entrenador
                         </h4>
-                        <p class="text-slate-700">${workout.coach_feedback}</p>
+                        <p class="text-slate-700">${escapeHtml(workout.coach_feedback)}</p>
                     </div>
                 `;
             }
