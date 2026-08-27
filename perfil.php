@@ -56,8 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] 
         $stmt = $db->prepare($sql);
         if ($stmt->execute($params)) {
             $success = "Perfil actualizado correctamente.";
-            // Refrescar el nombre en sesión (Auth::user() lee $_SESSION['name'])
-            $_SESSION['name'] = $name;
+            // Releer de la base los datos que el header muestra desde sesión:
+            // el nombre y tambien el avatar recien subido.
+            Auth::refreshSession();
             $user['name'] = $name;
             $user['email'] = $email;
             $user['avatar_url'] = $avatarUrl;

@@ -25,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             'goal_date' => $_POST['goal_date'] ?: null,
             'goal_pace' => $_POST['goal_pace'] ?: null,
             'level' => $_POST['level'] ?: 'Principiante',
-            'available_days' => json_encode(['lunes', 'martes', 'miercoles', 'jueves', 'viernes']),
+            // El modelo se encarga de serializar: aqui va el array tal cual.
+            'available_days' => ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'],
             'preferred_long_run_day' => $_POST['preferred_long_run_day'] ?: 'Domingo',
             'max_time_per_session' => $_POST['max_time_per_session'] ?: 60,
             'observations' => $_POST['observations'] ?: ''
@@ -53,14 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $athleteData['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
         }
 
-        User::update($_POST['athlete_id'], $athleteData);
-        header('Location: atletas.php?updated=1');
+        // El coach_id acota la operacion a los atletas propios: si el id es de
+        // otro coach, User::update devuelve false y no se toca nada.
+        $ok = User::update($_POST['athlete_id'], $athleteData, $coach['id']);
+        header('Location: atletas.php?' . ($ok ? 'updated=1' : 'denied=1'));
         exit;
     }
 
     if ($_POST['action'] === 'delete_athlete' && isset($_POST['athlete_id'])) {
-        User::delete($_POST['athlete_id']);
-        header('Location: atletas.php?deleted=1');
+        $ok = User::delete($_POST['athlete_id'], $coach['id']);
+        header('Location: atletas.php?' . ($ok ? 'deleted=1' : 'denied=1'));
         exit;
     }
 }
@@ -97,6 +100,12 @@ include 'views/layout/header.php';
 <?php if (isset($_GET['deleted'])): ?>
     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
         ✅ Atleta eliminado correctamente
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['denied'])): ?>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
+        ⚠️ No se realizó la operación: ese atleta no pertenece a tu equipo.
     </div>
 <?php endif; ?>
 
@@ -322,7 +331,7 @@ include 'views/layout/header.php';
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Tiempo Máximo por Sesión
                     (minutos)</label>
-                <input type="number" name="max_time_per_session" id="fieldMaxTime" placeholder="90" value="90"
+                <input type="number" name="max_time_per_session" id="fieldMaxTime" placeholder="60" value="60"
                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
             </div>
 
@@ -377,7 +386,7 @@ include 'views/layout/header.php';
         document.getElementById('fieldGoalPace').value = athlete.goal_pace || '';
         document.getElementById('fieldGoalDate').value = athlete.goal_date ? athlete.goal_date.split(' ')[0] : '';
         document.getElementById('fieldLongRunDay').value = athlete.preferred_long_run_day || 'Domingo';
-        document.getElementById('fieldMaxTime').value = athlete.max_time_per_session || 90;
+        document.getElementById('fieldMaxTime').value = athlete.max_time_per_session || 60;
         document.getElementById('fieldObservations').value = athlete.observations || '';
 
         document.getElementById('passwordField').required = false;

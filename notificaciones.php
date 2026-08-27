@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Mark specific as read
 if (isset($_GET['read'])) {
-    Notification::markAsRead($_GET['read']);
+    Notification::markAsRead((int) $_GET['read'], $userId);
     header('Location: notificaciones.php');
     exit;
 }
