@@ -81,6 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 Notification::create($athleteId, $msg, 'info');
             }
         }
+        // Sin entrenamientos creados no hubo plan: puede ser que no se eligiera
+        // ninguna plantilla, o que las elegidas no sean de este coach.
+        if (empty($createdWorkouts)) {
+            header('Location: generar_plan.php?vacio=1');
+            exit;
+        }
+
         header('Location: generar_plan.php?success=plan');
         exit;
     }
@@ -158,6 +165,12 @@ include 'views/layout/header.php';
 <?php if (isset($_GET['denied'])): ?>
     <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
         ⚠️ No se generó el plan: ese atleta no pertenece a tu equipo.
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['vacio'])): ?>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
+        ⚠️ No se creó ningún entrenamiento. Revisa que hayas elegido al menos una plantilla propia.
     </div>
 <?php endif; ?>
 
