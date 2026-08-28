@@ -7,3 +7,6 @@ config/config.local.php
 # Add any other sensitive or temporary files here
 # Credenciales de produccion (Hostinger) — nunca versionar.
 config/config.production.php
+
+# Backups de base de datos (contienen hashes de usuarios reales)
+backups/

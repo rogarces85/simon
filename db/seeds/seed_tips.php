@@ -8,12 +8,18 @@ require_once __DIR__ . '/../../includes/db.php';
 
 $db = Database::getInstance();
 
-if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
-    fwrite(STDERR, "Abortado: DB_HOST es '" . DB_HOST . "'. Solo para base local.\n");
-    exit(1);
-}
-
 $dryRun = in_array('--dry-run', $argv, true);
+$allowRemote = in_array('--allow-remote', $argv, true);
+
+// Salvaguarda: por defecto este seed solo toca la base local. Con
+// --allow-remote se permite cargar los tips en produccion (Hostinger).
+if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
+    if (!$allowRemote) {
+        fwrite(STDERR, "Abortado: DB_HOST es '" . DB_HOST . "'. Solo para base local (usa --allow-remote para cargas intencionales a produccion).\n");
+        exit(1);
+    }
+    fwrite(STDERR, "AVISO: cargando en base REMOTA '" . DB_NAME . "' en '" . DB_HOST . "'\n");
+}
 
 $tips = [
     [

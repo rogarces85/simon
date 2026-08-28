@@ -28,12 +28,18 @@ require_once __DIR__ . '/../../models/User.php';
 
 $db = Database::getInstance();
 
-if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
-    fwrite(STDERR, "Abortado: DB_HOST es '" . DB_HOST . "'. Este seed es solo para la base local.\n");
-    exit(1);
-}
-
 $dryRun = in_array('--dry-run', $argv, true);
+$allowRemote = in_array('--allow-remote', $argv, true);
+
+// Salvaguarda: por defecto este seed solo toca la base local. Con
+// --allow-remote se permite cargar la biblioteca en produccion (Hostinger).
+if (DB_HOST !== 'localhost' && DB_HOST !== '127.0.0.1') {
+    if (!$allowRemote) {
+        fwrite(STDERR, "Abortado: DB_HOST es '" . DB_HOST . "'. Este seed es solo para la base local (usa --allow-remote para cargas intencionales a produccion).\n");
+        exit(1);
+    }
+    fwrite(STDERR, "AVISO: cargando en base REMOTA '" . DB_NAME . "' en '" . DB_HOST . "'\n");
+}
 $targetCoach = null;
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--coach=')) {
