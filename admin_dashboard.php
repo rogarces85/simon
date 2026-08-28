@@ -9,6 +9,7 @@ Auth::requireRole('admin');
 $user = Auth::user();
 $coaches = User::getByRole('coach');
 
+$pageTitle = 'Administración';
 include 'views/layout/header.php';
 ?>
 
@@ -18,7 +19,7 @@ include 'views/layout/header.php';
         <p class="text-slate-500 mt-1">Gestión global del sistema</p>
     </div>
     <a href="crear_entrenador.php"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors flex items-center gap-2">
+        class="btn-primary">
         <i data-lucide="user-plus" class="w-5 h-5"></i>
         Nuevo Entrenador
     </a>
@@ -32,19 +33,28 @@ include 'views/layout/header.php';
         <table class="w-full">
             <thead class="bg-slate-50 border-b border-slate-100">
                 <tr>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre
+                    <th scope="col" class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nombre
                     </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email
+                    <th scope="col" class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email
                     </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Team
+                    <th scope="col" class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Team
                     </th>
-                    <th class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado
+                    <th scope="col" class="text-left py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado
                     </th>
-                    <th class="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th scope="col" class="text-right py-4 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
+                <?php if (empty($coaches)): ?>
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            <i data-lucide="users" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
+                            <p>No hay entrenadores registrados</p>
+                            <a href="crear_entrenador.php" class="text-blue-600 font-semibold hover:underline mt-2 inline-block">Crear el primero</a>
+                        </td>
+                    </tr>
+                <?php else: ?>
                 <?php foreach ($coaches as $coach):
                     $team = Team::findByCoach($coach['id']);
                     ?>
@@ -81,12 +91,13 @@ include 'views/layout/header.php';
                             </span>
                         </td>
                         <td class="py-4 px-6 text-right">
-                            <button class="text-slate-400 hover:text-blue-600 transition-colors p-2">
+                            <a href="perfil.php?id=<?php echo $coach['id']; ?>" class="text-slate-400 hover:text-blue-600 transition-colors p-2" aria-label="Editar <?php echo htmlspecialchars($coach['name']); ?>">
                                 <i data-lucide="edit-2" class="w-4 h-4"></i>
-                            </button>
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

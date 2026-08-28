@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 $athletes = User::getByCoachId($coach['id']);
+$pageTitle = 'Mis Atletas';
 include 'views/layout/header.php';
 ?>
 
@@ -86,26 +87,30 @@ include 'views/layout/header.php';
 </div>
 
 <?php if (isset($_GET['success'])): ?>
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta creado exitosamente
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        Atleta creado exitosamente
     </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['updated'])): ?>
-    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta actualizado exitosamente
+    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        Atleta actualizado exitosamente
     </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['deleted'])): ?>
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Atleta eliminado correctamente
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        Atleta eliminado correctamente
     </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['denied'])): ?>
-    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
-        ⚠️ No se realizó la operación: ese atleta no pertenece a tu equipo.
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        No se realizó la operación: ese atleta no pertenece a tu equipo.
     </div>
 <?php endif; ?>
 
@@ -123,11 +128,11 @@ include 'views/layout/header.php';
     <table class="w-full" id="athleteTable">
         <thead class="bg-slate-50">
             <tr>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nombre</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Email</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nivel</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Ritmo Objetivo</th>
-                <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acciones</th>
+                <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nombre</th>
+                <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Email</th>
+                <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Nivel</th>
+                <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Ritmo Objetivo</th>
+                <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acciones</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -168,7 +173,7 @@ include 'views/layout/header.php';
                         <td class="px-6 py-4 flex gap-2">
                             <button onclick='openEditModal(<?php echo json_encode($athlete); ?>)'
                                 class="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-all"
-                                title="Editar">
+                                title="Editar" aria-label="Editar atleta <?php echo htmlspecialchars($athlete['name']); ?>">
                                 <i data-lucide="pencil" class="w-5 h-5"></i>
                             </button>
                             <form method="POST" onsubmit="return confirm('¿Estás seguro de eliminar a este atleta?')"
@@ -178,7 +183,7 @@ include 'views/layout/header.php';
                                 <input type="hidden" name="athlete_id" value="<?php echo $athlete['id']; ?>">
                                 <button type="submit"
                                     class="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                    title="Eliminar">
+                                    title="Eliminar" aria-label="Eliminar atleta <?php echo htmlspecialchars($athlete['name']); ?>">
                                     <i data-lucide="trash-2" class="w-5 h-5"></i>
                                 </button>
                             </form>
@@ -191,7 +196,7 @@ include 'views/layout/header.php';
 </div>
 
 <!-- Modal Atleta (Create/Edit) -->
-<div id="modalAtleta" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="modalAtleta" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalSubtitle">
     <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
             <div>
@@ -199,7 +204,7 @@ include 'views/layout/header.php';
                 <p class="text-slate-500 text-sm mt-1" id="modalSubtitle">Completa la información del atleta para
                     agregarlo a tu equipo.</p>
             </div>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
@@ -371,6 +376,7 @@ include 'views/layout/header.php';
         document.getElementById('modalAtleta').classList.add('flex');
         generatePassword();
         lucide.createIcons();
+        trapFocus(document.getElementById('modalAtleta'));
     }
 
     function openEditModal(athlete) {
@@ -398,6 +404,7 @@ include 'views/layout/header.php';
         document.getElementById('modalAtleta').classList.remove('hidden');
         document.getElementById('modalAtleta').classList.add('flex');
         lucide.createIcons();
+        trapFocus(document.getElementById('modalAtleta'));
     }
 
     function resetForm() {
@@ -408,6 +415,19 @@ include 'views/layout/header.php';
     function closeModal() {
         document.getElementById('modalAtleta').classList.add('hidden');
         document.getElementById('modalAtleta').classList.remove('flex');
+    }
+
+    function trapFocus(modal) {
+        const focusable = modal.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            }
+        });
+        if (first) first.focus();
     }
 
     function generatePassword() {

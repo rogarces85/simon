@@ -15,17 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!Csrf::verify($_POST['csrf_token'] ?? '')) {
         $error = 'Sesión expirada, intenta nuevamente.';
     } else {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+        $username = $_POST['username'] ?? '';
+        $password = $_POST['password'] ?? '';
 
-    if (Auth::isLoginLocked($username)) {
-        $error = 'Demasiados intentos fallidos. Intenta nuevamente en unos minutos.';
-    } elseif (Auth::login($username, $password)) {
-        header('Location: dashboard.php');
-        exit;
-    } else {
-        $error = 'Credenciales inválidas';
-    }
+        if (Auth::isLoginLocked($username)) {
+            $error = 'Demasiados intentos fallidos. Intenta nuevamente en unos minutos.';
+        } elseif (Auth::login($username, $password)) {
+            header('Location: dashboard.php');
+            exit;
+        } else {
+            $error = 'Credenciales inválidas';
+        }
     }
 }
 ?>
@@ -62,26 +62,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <?php if ($error): ?>
-            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg text-sm">
-                <?php echo $error; ?>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg text-sm flex items-center gap-3" role="alert">
+                <i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i>
+                <span><?php echo htmlspecialchars($error); ?></span>
             </div>
         <?php endif; ?>
 
         <form method="POST" class="space-y-6">
             <?php echo Csrf::field(); ?>
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Usuario</label>
-                <input type="text" name="username" placeholder="usuario@ejemplo.com" required
-                    class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 placeholder:text-slate-400">
+                <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">Usuario</label>
+                <input type="text" id="username" name="username" placeholder="usuario@ejemplo.com" required
+                    class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 placeholder:text-slate-500">
             </div>
             <div>
                 <div class="flex justify-between mb-2">
-                    <label class="text-sm font-semibold text-slate-700">Contraseña</label>
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-700">¿Olvidaste tu
+                    <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
+                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-700" onclick="alert('Contacta a tu administrador para recuperar tu contraseña.'); return false;">¿Olvidaste tu
                         contraseña?</a>
                 </div>
-                <input type="password" name="password" placeholder="••••••••" required
-                    class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 placeholder:text-slate-400">
+                <div class="relative">
+                    <input type="password" id="password" name="password" placeholder="••••••••" required
+                        class="w-full px-4 py-3.5 pr-12 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 placeholder:text-slate-500">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600" aria-label="Mostrar contraseña">
+                        <i data-lucide="eye" class="w-5 h-5" id="togglePwdIcon"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit"
                 class="w-full bg-blue-600 text-white py-4 px-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-[0.98]">
@@ -92,13 +98,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="text-center mt-10">
             <p class="text-slate-500 font-medium">
                 ¿No tienes cuenta?
-                <a href="#" class="text-blue-600 hover:text-blue-700 font-bold ml-1">Regístrate</a>
+                <span class="text-slate-400 font-bold ml-1">Contacta a tu administrador</span>
             </p>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
+
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('togglePwdIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                pwd.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
     </script>
 </body>
 

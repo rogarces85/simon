@@ -6,10 +6,32 @@ class Auth
     private const MAX_LOGIN_ATTEMPTS = 5;
     private const LOGIN_LOCKOUT_MINUTES = 15;
 
+    private const SESSION_LIFETIME = 1800; // 30 minutos de inactividad
+
     public static function init()
     {
         if (session_status() === PHP_SESSION_NONE) {
+            // Cookies de sesion seguras
+            ini_set('session.cookie_httponly', '1');
+            ini_set('session.cookie_samesite', 'Lax');
+            ini_set('session.gc_maxlifetime', (string) self::SESSION_LIFETIME);
             session_start();
+
+            // Timeout por inactividad
+            if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > self::SESSION_LIFETIME)) {
+                session_unset();
+                session_destroy();
+                session_start();
+            }
+            $_SESSION['last_activity'] = time();
+
+            // Regenerar periodicamente el ID de sesion
+            if (empty($_SESSION['created'])) {
+                $_SESSION['created'] = time();
+            } elseif (time() - $_SESSION['created'] > self::SESSION_LIFETIME) {
+                session_regenerate_id(true);
+                $_SESSION['created'] = time();
+            }
         }
     }
 
@@ -37,6 +59,7 @@ class Auth
         if ($user && password_verify($password, $user['password'])) {
             self::fillSession($user);
             self::clearFailedLoginAttempts($username);
+            session_regenerate_id(true);
             return true;
         }
 
@@ -61,6 +84,11 @@ class Auth
     public static function logout()
     {
         self::init();
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+        session_regenerate_id(true);
         session_destroy();
     }
 

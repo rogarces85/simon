@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         // es decir, el workout realmente pertenecía a un atleta de este coach)
         $workout = $updated ? Workout::getById($workoutId) : null;
         if ($workout) {
-            $msg = "💬 Tu entrenador ha respondido a tu feedback del entrenamiento del " . (new DateTime($workout['date']))->format('d/m/Y');
+            $msg = "Tu entrenador ha respondido a tu feedback del entrenamiento del " . (new DateTime($workout['date']))->format('d/m/Y');
             Notification::create($workout['athlete_id'], $msg, 'info');
         }
 
@@ -113,6 +113,7 @@ $stmt = $db->prepare($statsSql);
 $stmt->execute([$coach['id']]);
 $stats = $stmt->fetch();
 
+$pageTitle = 'Entrenamientos y Reportes';
 include 'views/layout/header.php';
 ?>
 
@@ -150,8 +151,9 @@ include 'views/layout/header.php';
 </div>
 
 <?php if (isset($_GET['success'])): ?>
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Feedback enviado exitosamente
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        Feedback enviado exitosamente
     </div>
 <?php endif; ?>
 
@@ -229,13 +231,13 @@ include 'views/layout/header.php';
             <table class="w-full">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Atleta</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Fecha</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Tipo</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Resultados</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">RPE</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Feedback</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acción</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Atleta</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Fecha</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Tipo</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Resultados</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">RPE</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Feedback</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -270,10 +272,10 @@ include 'views/layout/header.php';
                             <td class="px-6 py-4 text-sm">
                                 <div class="flex gap-3 text-slate-600">
                                     <?php if ($workout['actual_distance']): ?>
-                                        <span title="Distancia">📏 <?php echo $workout['actual_distance']; ?> km</span>
+                                        <span title="Distancia"><i data-lucide="ruler" class="w-4 h-4 inline"></i> <?php echo $workout['actual_distance']; ?> km</span>
                                     <?php endif; ?>
                                     <?php if ($workout['actual_time']): ?>
-                                        <span title="Tiempo">⏱️ <?php echo $workout['actual_time']; ?> min</span>
+                                        <span title="Tiempo"><i data-lucide="timer" class="w-4 h-4 inline"></i> <?php echo $workout['actual_time']; ?> min</span>
                                     <?php endif; ?>
                                     <?php if (!$workout['actual_distance'] && !$workout['actual_time']): ?>
                                         <span class="text-slate-400">-</span>
@@ -294,11 +296,9 @@ include 'views/layout/header.php';
                             </td>
                             <td class="px-6 py-4">
                                 <?php if ($hasCoachFeedback): ?>
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">✅
-                                        Respondido</span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700"><i data-lucide="check-circle" class="w-3 h-3 inline"></i> Respondido</span>
                                 <?php elseif ($hasAthlFeedback): ?>
-                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">💬
-                                        Pendiente</span>
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"><i data-lucide="message-circle" class="w-3 h-3 inline"></i> Pendiente</span>
                                 <?php else: ?>
                                     <span class="text-slate-400 text-xs">Sin feedback</span>
                                 <?php endif; ?>
@@ -326,14 +326,14 @@ include 'views/layout/header.php';
 </div>
 
 <!-- Workout Detail + Feedback Modal -->
-<div id="workoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="workoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="workoutModalTitle" aria-describedby="modalAthlete">
     <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
             <div>
-                <h3 class="text-xl font-bold text-slate-900">DETALLE DEL ENTRENAMIENTO</h3>
+                <h3 class="text-xl font-bold text-slate-900" id="workoutModalTitle">DETALLE DEL ENTRENAMIENTO</h3>
                 <p class="text-slate-500 text-sm mt-1" id="modalAthlete"></p>
             </div>
-            <button onclick="closeWorkoutModal()" class="text-slate-400 hover:text-slate-600">
+            <button onclick="closeWorkoutModal()" class="text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
@@ -345,6 +345,11 @@ include 'views/layout/header.php';
 
 <script>
     const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
+
+    function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
 
     function openWorkoutModal(workout) {
         const modal = document.getElementById('workoutModal');
@@ -379,7 +384,7 @@ include 'views/layout/header.php';
                     <h4 class="text-xs uppercase font-bold text-green-600 mb-2 flex items-center gap-2">
                         <i data-lucide="message-circle" class="w-4 h-4"></i> Feedback del Atleta
                     </h4>
-                    <p class="text-slate-700">${workout.feedback}</p>
+                    <p class="text-slate-700">${escapeHtml(workout.feedback)}</p>
                 </div>
             `;
         }
@@ -390,7 +395,7 @@ include 'views/layout/header.php';
                     <h4 class="text-xs uppercase font-bold text-purple-600 mb-2 flex items-center gap-2">
                         <i data-lucide="check-check" class="w-4 h-4"></i> Tu Respuesta
                     </h4>
-                    <p class="text-slate-700">${workout.coach_feedback}</p>
+                    <p class="text-slate-700">${escapeHtml(workout.coach_feedback)}</p>
                     <p class="text-xs text-purple-600 mt-2">${workout.coach_feedback_at ? new Date(workout.coach_feedback_at).toLocaleString('es-CL') : ''}</p>
                 </div>
             `;

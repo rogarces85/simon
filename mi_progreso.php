@@ -44,6 +44,7 @@ if ($progressionData) {
     }
 }
 
+$pageTitle = 'Mi Progreso';
 include 'views/layout/header.php';
 ?>
 
@@ -72,9 +73,14 @@ include 'views/layout/header.php';
                 <i data-lucide="clock" class="w-6 h-6 text-green-600"></i>
             </div>
             <p class="text-2xl font-bold text-slate-900">
-                <?php echo round($totalTime); ?>
+                <?php
+                $totalMin = round($totalTime);
+                $hours = floor($totalMin / 60);
+                $mins = $totalMin % 60;
+                echo $hours > 0 ? $hours . 'h ' . $mins . 'm' : $totalMin . ' min';
+                ?>
             </p>
-            <p class="text-xs text-slate-500">min Totales</p>
+            <p class="text-xs text-slate-500">Tiempo Total</p>
         </div>
     </div>
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
@@ -140,16 +146,24 @@ include 'views/layout/header.php';
     </div>
     <p class="text-xs text-slate-500 mt-2">
         <?php if ($complianceRate >= 80): ?>
-            🏆 ¡Excelente! Mantén este ritmo.
+            <i data-lucide="trophy" class="w-3 h-3 inline"></i> ¡Excelente! Mantén este ritmo.
         <?php elseif ($complianceRate >= 50): ?>
-            💪 ¡Buen trabajo! Intenta completar más sesiones.
+            <i data-lucide="trending-up" class="w-3 h-3 inline"></i> ¡Buen trabajo! Intenta completar más sesiones.
         <?php else: ?>
-            🎯 Cada entrenamiento cuenta. ¡Ánimo!
+            <i data-lucide="target" class="w-3 h-3 inline"></i> Cada entrenamiento cuenta. ¡Ánimo!
         <?php endif; ?>
     </p>
 </div>
 
 <!-- Charts -->
+<?php if (empty($progressionData)): ?>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center text-slate-500 mb-8">
+    <i data-lucide="bar-chart-3" class="w-16 h-16 mx-auto mb-4 opacity-30"></i>
+    <p class="text-lg font-semibold">Aún no hay datos de progreso</p>
+    <p class="text-sm mt-1">Completa entrenamientos para ver tus estadísticas aquí.</p>
+    <a href="mi_plan.php" class="text-blue-600 font-semibold hover:underline mt-3 inline-block">Ver mi programación</a>
+</div>
+<?php else: ?>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <!-- Volume Chart -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -178,6 +192,7 @@ include 'views/layout/header.php';
     </h3>
     <canvas id="paceChart" height="150"></canvas>
 </div>
+<?php endif; ?>
 
 <!-- Recent Workouts History -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -199,12 +214,12 @@ include 'views/layout/header.php';
             <table class="w-full">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Fecha</th>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Tipo</th>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Descripción</th>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Distancia</th>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Tiempo</th>
-                        <th class="text-left px-6 py-3 text-sm font-semibold text-slate-600">RPE</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Fecha</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Tipo</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Descripción</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Distancia</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">Tiempo</th>
+                        <th scope="col" class="text-left px-6 py-3 text-sm font-semibold text-slate-600">RPE</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -255,6 +270,7 @@ include 'views/layout/header.php';
     <?php endif; ?>
 </div>
 
+<?php if (!empty($progressionData)): ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
     const weekLabels = <?php echo json_encode(array_reverse($weekLabels)); ?>;
@@ -359,5 +375,6 @@ include 'views/layout/header.php';
         }
     });
 </script>
+<?php endif; ?>
 
 <?php include 'views/layout/footer.php'; ?>

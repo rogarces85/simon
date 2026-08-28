@@ -49,13 +49,12 @@ if (isset($_GET['read_all'])) {
     exit;
 }
 
-$notifications = Notification::getUnread($userId); // Actually we might want ALL, but let's stick to unread or recent?
-// Model getUnread returns unread. Let's add getAll or just show unread for now + recent read?
-// For simplicity, let's just show Unread and maybe last 10 Read?
-// I'll stick to getUnread for now or update model later.
-// Let's rely on getUnread and maybe a separate query for history if needed.
-// Check Notification model... it has getUnread.
+$showAll = ($_GET['show'] ?? 'unread') === 'all';
+$notifications = $showAll
+    ? Notification::getAll($userId, 50)
+    : Notification::getUnread($userId);
 
+$pageTitle = 'Notificaciones';
 include 'views/layout/header.php';
 ?>
 
@@ -65,17 +64,31 @@ include 'views/layout/header.php';
             <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Notificaciones</h1>
             <p class="text-slate-500 mt-1">Mantente al día con tu entrenamiento y equipo.</p>
         </div>
-        <?php if (!empty($notifications)): ?>
-            <a href="?read_all=1" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+        <div class="flex items-center gap-3">
+            <?php if (!empty($notifications)): ?>
+            <a href="?read_all=1<?php echo $showAll ? '&show=all' : ''; ?>" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
                 Marcar todas como leídas
             </a>
-        <?php endif; ?>
+            <?php endif; ?>
+            <a href="?show=<?php echo $showAll ? 'unread' : 'all'; ?>" class="text-sm font-semibold text-slate-500 hover:text-blue-600 ml-2">
+                <?php echo $showAll ? 'Solo no leídas' : 'Ver historial'; ?>
+            </a>
+        </div>
     </div>
 
+    <?php echo flash_render(); ?>
+
     <?php if ($success): ?>
-        <div class="bg-green-50 text-green-600 p-4 rounded-xl mb-6 flex items-center gap-3">
+        <div class="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl mb-6 flex items-center gap-3" role="alert">
             <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <?php echo $success; ?>
+            <?php echo htmlspecialchars($success); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error): ?>
+        <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex items-center gap-3" role="alert">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+            <?php echo htmlspecialchars($error); ?>
         </div>
     <?php endif; ?>
 
@@ -87,14 +100,14 @@ include 'views/layout/header.php';
                     <i data-lucide="bell-off" class="w-8 h-8"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-900">Sin novedades</h3>
-                <p class="text-slate-500">No tienes notificaciones pendientes.</p>
+                <p class="text-slate-500"><?php echo $showAll ? 'Aún no tienes historial de notificaciones.' : 'No tienes notificaciones pendientes.'; ?></p>
             </div>
         <?php else: ?>
             <?php foreach ($notifications as $notif): ?>
                 <div
                     class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex gap-4 transition-all hover:shadow-md">
                     <div class="shrink-0">
-                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                        <div class="w-12 h-12 <?php echo $notif['is_read'] ? 'bg-slate-50 text-slate-400' : 'bg-blue-50 text-blue-600'; ?> rounded-xl flex items-center justify-center">
                             <i data-lucide="info" class="w-6 h-6"></i>
                         </div>
                     </div>
@@ -104,12 +117,15 @@ include 'views/layout/header.php';
                         </p>
                         <span class="text-xs text-slate-400 font-semibold mt-2 block">
                             <?php echo (new DateTime($notif['created_at']))->format('d M H:i'); ?>
+                            <?php if ($notif['is_read']): ?> · Leída<?php endif; ?>
                         </span>
                     </div>
+                    <?php if (!$notif['is_read']): ?>
                     <a href="?read=<?php echo $notif['id']; ?>" class="text-slate-400 hover:text-blue-600 self-start p-2"
-                        title="Marcar como leída">
+                        title="Marcar como leída" aria-label="Marcar notificación como leída">
                         <i data-lucide="check" class="w-5 h-5"></i>
                     </a>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>

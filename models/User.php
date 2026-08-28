@@ -9,10 +9,14 @@ class User
         $sql = "INSERT INTO users (username, password, role, name, coach_id, team_id, goal_date, goal_pace, level, available_days, preferred_long_run_day, max_time_per_session, observations) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+        $rawPassword = $data['password'];
+        $isHashed = str_starts_with($rawPassword, '$2y$') || str_starts_with($rawPassword, '$2b$') || str_starts_with($rawPassword, '$argon2');
+        $hashedPassword = $isHashed ? $rawPassword : password_hash($rawPassword, PASSWORD_DEFAULT);
+
         $stmt = $db->prepare($sql);
         $stmt->execute([
             $data['username'],
-            $data['password'],
+            $hashedPassword,
             $data['role'] ?? 'athlete',
             $data['name'],
             $data['coach_id'] ?? null,

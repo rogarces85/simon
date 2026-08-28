@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $dateStr = (new DateTime($workout['date']))->format('d/m/Y');
             $hasFeedback = !empty($_POST['feedback']);
 
-            $message = "✅ {$user['name']} completó su entrenamiento del {$dateStr}";
+            $message = "{$user['name']} completó su entrenamiento del {$dateStr}";
             if ($hasFeedback) {
                 $message .= " y dejó feedback para revisar";
             }
@@ -104,6 +104,10 @@ foreach ($workouts as $w) {
 $firstDayOfMonth = (int) $monthStart->format('N'); // 1=Monday
 $daysInMonth = (int) $monthEnd->format('d');
 
+// Lunes de la semana que contiene el 1 del mes mostrado, para el PDF mensual.
+$exportMonthStart = (clone $monthStart)->modify('monday this week')->format('Y-m-d');
+
+$pageTitle = 'Mi Programación';
 include 'views/layout/header.php';
 ?>
 
@@ -125,7 +129,25 @@ include 'views/layout/header.php';
         <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">MI PROGRAMACIÓN</h1>
         <p class="text-slate-500 mt-1">Tu plan de entrenamiento mensual</p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
+        <!-- Exportar PDF -->
+        <div class="relative" id="exportMenuWrap">
+            <button type="button" onclick="toggleExportMenu()"
+                class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition-all text-sm flex items-center gap-2"
+                aria-haspopup="true" aria-expanded="false" aria-controls="exportMenu">
+                <i data-lucide="download" class="w-4 h-4"></i>Exportar PDF
+            </button>
+            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 z-20 overflow-hidden" role="menu">
+                <a href="exportar_plan.php?mode=week&week_start=<?php echo date('Y-m-d', strtotime('monday this week')); ?>"
+                    class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                    Semana actual
+                </a>
+                <a href="exportar_plan.php?mode=full&weeks=5&week_start=<?php echo $exportMonthStart; ?>"
+                    class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50" role="menuitem">
+                    Mes completo (5 semanas)
+                </a>
+            </div>
+        </div>
         <a href="mi_plan.php?month=<?php echo $prevMonth; ?>"
             class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition-all">
             <i data-lucide="chevron-left" class="w-5 h-5 inline"></i>
@@ -150,14 +172,16 @@ include 'views/layout/header.php';
 </div>
 
 <?php if (isset($_GET['success'])): ?>
-    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6">
-        ✅ Entrenamiento registrado exitosamente
+    <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
+        <span>Entrenamiento registrado exitosamente</span>
     </div>
 <?php endif; ?>
 
 <?php if (isset($_GET['denied'])): ?>
-    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6">
-        ⚠️ No se registró el entrenamiento: no corresponde a tu programación.
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3" role="alert">
+        <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0"></i>
+        <span>No se registró el entrenamiento: no corresponde a tu programación.</span>
     </div>
 <?php endif; ?>
 
@@ -266,17 +290,17 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
             ];
             ?>
             <div
-                class="min-h-[120px] border-b border-r border-slate-100 p-2 <?php echo $isToday ? 'bg-blue-50/50 ring-2 ring-inset ring-blue-300' : ''; ?> hover:bg-slate-50 transition-colors">
+                class="min-h-[120px] border-b border-r border-slate-100 p-2 <?php echo $isToday ? 'bg-blue-100/50 ring-2 ring-blue-500 ring-offset-1' : ''; ?> hover:bg-slate-50 transition-colors">
                 <!-- Day number -->
                 <div class="flex justify-between items-center mb-1">
                     <span
-                        class="text-sm font-bold <?php echo $isToday ? 'text-blue-600 bg-blue-600 text-white w-7 h-7 rounded-full flex items-center justify-center' : 'text-slate-600'; ?>">
+                        class="text-sm font-bold <?php echo $isToday ? 'text-white bg-blue-600 w-7 h-7 rounded-full flex items-center justify-center' : 'text-slate-600'; ?>">
                         <?php echo $day; ?>
                     </span>
                     <?php if ($isCompleted): ?>
-                        <span class="text-green-500 text-xs">✅</span>
+                        <span class="text-green-500" aria-label="Completado"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
                     <?php elseif ($isRest): ?>
-                        <span class="text-xs">😴</span>
+                        <span class="text-slate-400" aria-label="Descanso"><i data-lucide="moon" class="w-3 h-3"></i></span>
                     <?php endif; ?>
                 </div>
 
@@ -290,8 +314,9 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                             </div>
                         <?php else: ?>
                             <!-- Workout Cell -->
-                            <div onclick='openWorkoutModal(<?php echo htmlspecialchars(json_encode($workout), ENT_QUOTES); ?>, "<?php echo $dateKey; ?>")'
-                                class="px-2 py-1.5 rounded-lg border cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>">
+                            <button type="button" onclick='openWorkoutModal(<?php echo htmlspecialchars(json_encode($workout), ENT_QUOTES); ?>, "<?php echo $dateKey; ?>")'
+                                class="px-2 py-1.5 rounded-lg border w-full text-left cursor-pointer transition-all hover:shadow-sm <?php echo $typeColor; ?>"
+                                aria-label="Ver entrenamiento: <?php echo htmlspecialchars($workout['type'] . ' - ' . ($workout['description'] ?? '')); ?>">
                                 <p class="text-xs font-bold truncate"><?php echo htmlspecialchars($workout['type']); ?></p>
                                 <p class="text-[10px] truncate opacity-80">
                                     <?php echo htmlspecialchars($workout['description'] ?? ''); ?>
@@ -299,7 +324,7 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                                 <?php if ($workout['status'] === 'completed' && $workout['actual_distance']): ?>
                                     <p class="text-[10px] font-semibold mt-0.5"><?php echo $workout['actual_distance']; ?> km</p>
                                 <?php endif; ?>
-                            </div>
+                            </button>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
@@ -335,14 +360,14 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
 </div>
 
 <!-- Workout Detail Modal (for non-rest days only) -->
-<div id="workoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="workoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDate">
     <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto m-4">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
             <div>
                 <h3 class="text-xl font-bold text-slate-900" id="modalTitle">Detalle del Entrenamiento</h3>
                 <p class="text-slate-500 text-sm mt-1" id="modalDate"></p>
             </div>
-            <button onclick="closeWorkoutModal()" class="text-slate-400 hover:text-slate-600">
+            <button onclick="closeWorkoutModal()" class="text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
@@ -354,6 +379,26 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
 
 <script>
     const CSRF_TOKEN = "<?php echo htmlspecialchars(Csrf::token()); ?>";
+
+    // Menu de exportar PDF: abrir/cerrar y cerrar al hacer click fuera.
+    function toggleExportMenu() {
+        const menu = document.getElementById('exportMenu');
+        const btn = menu.previousElementSibling;
+        menu.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', menu.classList.contains('hidden') ? 'false' : 'true');
+    }
+    document.addEventListener('click', function(e) {
+        const wrap = document.getElementById('exportMenuWrap');
+        if (wrap && !wrap.contains(e.target)) {
+            document.getElementById('exportMenu').classList.add('hidden');
+            wrap.querySelector('button').setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('exportMenu')?.classList.add('hidden');
+        }
+    });
 
     // El detalle se arma con innerHTML, asi que todo texto que venga de la base
     // pasa por aqui. Sin esto, un coach que escribiera HTML en una plantilla lo
@@ -478,8 +523,9 @@ $complianceRate = $activeWorkouts > 0 ? round(($completedMonth / $activeWorkouts
                             class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 file:font-semibold hover:file:bg-blue-200">
                     </div>
                     <button type="submit"
-                        class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all">
-                        ✅ Completar Entrenamiento
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        Completar Entrenamiento
                     </button>
                 </form>
             `;

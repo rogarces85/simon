@@ -26,12 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] 
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'];
 
-    // Avatar Upload
+    // Avatar Upload (sin auto-submit)
     $avatarUrl = $user['avatar_url'];
     if (isset($_FILES['avatar']) && FileUpload::validate($_FILES['avatar'], ['jpg', 'jpeg', 'png', 'webp'])) {
         $uploadDir = __DIR__ . '/uploads/avatars/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
+        }
+        // Eliminar avatar anterior si existe
+        if (!empty($user['avatar_url']) && file_exists(__DIR__ . '/' . $user['avatar_url'])) {
+            @unlink(__DIR__ . '/' . $user['avatar_url']);
         }
         $fileExt = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
         $fileName = 'avatar_' . $user['id'] . '_' . time() . '.' . $fileExt;
@@ -56,8 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] 
         $stmt = $db->prepare($sql);
         if ($stmt->execute($params)) {
             $success = "Perfil actualizado correctamente.";
-            // Releer de la base los datos que el header muestra desde sesión:
-            // el nombre y tambien el avatar recien subido.
             Auth::refreshSession();
             $user['name'] = $name;
             $user['email'] = $email;
@@ -68,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !Csrf::verify($_POST['csrf_token'] 
     }
 }
 
+$pageTitle = 'Mi Perfil';
 include 'views/layout/header.php';
 ?>
 
@@ -77,15 +80,17 @@ include 'views/layout/header.php';
         <p class="text-slate-500 mt-1">Gestiona tu información personal</p>
     </div>
 
+    <?php echo flash_render(); ?>
+
     <?php if ($success): ?>
-        <div class="bg-green-50 text-green-600 p-4 rounded-xl mb-6 flex items-center gap-2">
+        <div class="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl mb-6 flex items-center gap-2">
             <i data-lucide="check-circle" class="w-5 h-5"></i>
             <?php echo $success; ?>
         </div>
     <?php endif; ?>
 
     <?php if ($error): ?>
-        <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-2">
+        <div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex items-center gap-2">
             <i data-lucide="alert-circle" class="w-5 h-5"></i>
             <?php echo $error; ?>
         </div>
@@ -98,25 +103,22 @@ include 'views/layout/header.php';
         <div class="px-8 pb-8">
             <div class="relative flex justify-between items-end -mt-12 mb-6">
                 <div class="relative">
-                    <?php if (!empty($user['avatar_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($user['avatar_url']); ?>"
-                            class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover">
-                    <?php else: ?>
-                        <div
-                            class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-slate-200 flex items-center justify-center text-slate-400">
+                    <img id="avatarMain" src="<?php echo !empty($user['avatar_url']) ? htmlspecialchars($user['avatar_url']) : ''; ?>"
+                        class="w-24 h-24 rounded-full border-4 border-white shadow-md <?php echo empty($user['avatar_url']) ? 'hidden' : ''; ?> object-cover"
+                        alt="Avatar actual">
+                    <?php if (empty($user['avatar_url'])): ?>
+                        <div id="avatarPlaceholder" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-slate-200 flex items-center justify-center text-slate-400">
                             <i data-lucide="user" class="w-10 h-10"></i>
                         </div>
                     <?php endif; ?>
-                    <label
-                        class="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-sm border border-slate-200 cursor-pointer hover:bg-slate-50 text-slate-600">
+                    <img id="avatarPreview" class="hidden w-24 h-24 rounded-full border-4 border-white shadow-md object-cover" alt="Vista previa del nuevo avatar">
+                    <label class="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-sm border border-slate-200 cursor-pointer hover:bg-slate-50 text-slate-600" aria-label="Cambiar foto de perfil">
                         <i data-lucide="camera" class="w-4 h-4"></i>
-                        <input type="file" form="profileForm" name="avatar" accept="image/*" class="hidden"
-                            onchange="document.getElementById('profileForm').submit()">
+                        <input type="file" form="profileForm" name="avatar" accept="image/*" class="hidden" id="avatarInput" onchange="previewAvatar(this)">
                     </label>
                 </div>
                 <div class="mb-2">
-                    <span
-                        class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wider">
                         <?php echo htmlspecialchars($user['role']); ?>
                     </span>
                 </div>
@@ -126,14 +128,14 @@ include 'views/layout/header.php';
                 <?php echo Csrf::field(); ?>
                 <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
-                        <input type="text" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required
+                        <label for="name" class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
+                        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required
                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico</label>
-                        <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>"
+                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>"
                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
@@ -141,15 +143,14 @@ include 'views/layout/header.php';
                         <h4 class="text-sm font-bold text-slate-900 mb-4">Cambiar Contraseña</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-2">Nueva Contraseña</label>
-                                <input type="password" name="password" placeholder="Dejar en blanco para mantener"
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label for="password" class="block text-xs font-semibold text-slate-500 mb-2">Nueva Contraseña</label>
+                                <input type="password" id="password" name="password" placeholder="Mín. 8 caracteres, mayúscula, minúscula, número"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-slate-400">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-500 mb-2">Confirmar
-                                    Contraseña</label>
-                                <input type="password" name="confirm_password" placeholder="Confirmar nueva contraseña"
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label for="confirm_password" class="block text-xs font-semibold text-slate-500 mb-2">Confirmar Contraseña</label>
+                                <input type="password" id="confirm_password" name="confirm_password" placeholder="Repite la contraseña"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-slate-400">
                             </div>
                         </div>
                     </div>
@@ -157,7 +158,7 @@ include 'views/layout/header.php';
 
                 <div class="flex justify-end pt-4">
                     <button type="submit"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-shadow shadow-lg shadow-blue-100">
+                        class="btn-primary">
                         Guardar Cambios
                     </button>
                 </div>
@@ -165,5 +166,23 @@ include 'views/layout/header.php';
         </div>
     </div>
 </div>
+
+<script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('avatarPreview');
+            var main = document.getElementById('avatarMain');
+            var placeholder = document.getElementById('avatarPlaceholder');
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            if (main) main.classList.add('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 
 <?php include 'views/layout/footer.php'; ?>

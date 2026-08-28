@@ -38,4 +38,15 @@ class Notification
         $stmt = $db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?");
         return $stmt->execute([$userId]);
     }
+
+    // Obtener todas las notificaciones (leídas y no leídas) de un usuario, limitadas
+    public static function getAll($userId, $limit = 50)
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY is_read ASC, created_at DESC LIMIT ?");
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        $stmt->bindValue(2, (int) $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }

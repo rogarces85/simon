@@ -55,6 +55,7 @@ $allWorkouts = Workout::getAllByCoach(
 // Get summary stats (with same date filter)
 $plansSummary = Workout::getPlansSummaryByCoach($coach['id'], $dateFrom, $dateTo);
 
+$pageTitle = 'Mis Planes Generados';
 include 'views/layout/header.php';
 ?>
 
@@ -190,12 +191,12 @@ include 'views/layout/header.php';
             <table class="w-full">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Atleta</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Fecha</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Tipo</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Descripción</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Estado</th>
-                        <th class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acciones</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Atleta</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Fecha</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Tipo</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Descripción</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Estado</th>
+                        <th scope="col" class="text-left px-6 py-4 text-sm font-semibold text-slate-600">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -205,16 +206,16 @@ include 'views/layout/header.php';
                         $statusBadge = '';
                         $statusClass = '';
                         if ($workout['status'] === 'pending') {
-                            $statusBadge = '🟡 Pendiente';
+                            $statusBadge = '<i data-lucide="clock" class="w-3 h-3 inline mr-1"></i> Pendiente';
                             $statusClass = 'bg-amber-100 text-amber-700';
                         } elseif ($workout['status'] === 'completed' && $workout['coach_feedback']) {
-                            $statusBadge = '✅ Respondido';
+                            $statusBadge = '<i data-lucide="check-check" class="w-3 h-3 inline mr-1"></i> Respondido';
                             $statusClass = 'bg-purple-100 text-purple-700';
                         } elseif ($workout['status'] === 'completed' && $workout['feedback']) {
-                            $statusBadge = '🟢 Con Feedback';
+                            $statusBadge = '<i data-lucide="message-circle" class="w-3 h-3 inline mr-1"></i> Con Feedback';
                             $statusClass = 'bg-green-100 text-green-700';
                         } elseif ($workout['status'] === 'completed') {
-                            $statusBadge = '🔵 Completado';
+                            $statusBadge = '<i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i> Completado';
                             $statusClass = 'bg-blue-100 text-blue-700';
                         }
 
@@ -266,14 +267,14 @@ include 'views/layout/header.php';
 </div>
 
 <!-- Detail Modal -->
-<div id="detailModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalSubtitle">
     <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
             <div>
                 <h3 class="text-xl font-bold text-slate-900" id="modalTitle">DETALLE DEL PLAN</h3>
                 <p class="text-slate-500 text-sm mt-1" id="modalSubtitle">Información completa del entrenamiento</p>
             </div>
-            <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600">
+            <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
         </div>
@@ -285,6 +286,11 @@ include 'views/layout/header.php';
 </div>
 
 <script>
+    function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
     function openDetailModal(workout) {
         const modal = document.getElementById('detailModal');
         const content = document.getElementById('modalContent');
@@ -293,16 +299,16 @@ include 'views/layout/header.php';
         let statusBadge = '';
         let statusClass = '';
         if (workout.status === 'pending') {
-            statusBadge = '🟡 Pendiente';
+            statusBadge = '<i data-lucide="clock" class="w-3 h-3 inline mr-1"></i> Pendiente';
             statusClass = 'bg-amber-100 text-amber-700';
         } else if (workout.status === 'completed' && workout.coach_feedback) {
-            statusBadge = '✅ Respondido';
+            statusBadge = '<i data-lucide="check-check" class="w-3 h-3 inline mr-1"></i> Respondido';
             statusClass = 'bg-purple-100 text-purple-700';
         } else if (workout.status === 'completed' && workout.feedback) {
-            statusBadge = '🟢 Con Feedback';
+            statusBadge = '<i data-lucide="message-circle" class="w-3 h-3 inline mr-1"></i> Con Feedback';
             statusClass = 'bg-green-100 text-green-700';
         } else if (workout.status === 'completed') {
-            statusBadge = '🔵 Completado';
+            statusBadge = '<i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i> Completado';
             statusClass = 'bg-blue-100 text-blue-700';
         }
 
@@ -359,7 +365,7 @@ include 'views/layout/header.php';
                     <h4 class="text-xs uppercase font-bold text-green-600 mb-2 flex items-center gap-2">
                         <i data-lucide="message-circle" class="w-4 h-4"></i> Feedback del Atleta
                     </h4>
-                    <p class="text-slate-700">${workout.feedback}</p>
+                    <p class="text-slate-700">${escapeHtml(workout.feedback)}</p>
                 </div>
             `;
         }
@@ -370,7 +376,7 @@ include 'views/layout/header.php';
                     <h4 class="text-xs uppercase font-bold text-purple-600 mb-2 flex items-center gap-2">
                         <i data-lucide="check-check" class="w-4 h-4"></i> Tu Respuesta
                     </h4>
-                    <p class="text-slate-700">${workout.coach_feedback}</p>
+                    <p class="text-slate-700">${escapeHtml(workout.coach_feedback)}</p>
                     <p class="text-xs text-purple-600 mt-2">${workout.coach_feedback_at ? new Date(workout.coach_feedback_at).toLocaleString('es-CL') : ''}</p>
                 </div>
             `;
